@@ -1,0 +1,95 @@
+---
+description: Recharts data visualization patterns and best practices for charts
+globs: src/components/charts/**/*.tsx
+alwaysApply: false
+---
+# Recharts Visualization Rules
+
+## Chart Component Structure
+- Place chart components in `src/components/charts/` directory
+- Use TypeScript for prop types and data structures
+- Extract reusable chart configurations as constants
+- Implement responsive sizing with `ResponsiveContainer`
+
+## Data Preparation
+- Transform data before passing to chart components
+- Use consistent data key naming conventions
+- Handle empty/missing data gracefully
+- Type data structures with TypeScript interfaces
+
+## Chart Configuration
+- Define colors and themes as constants or from design tokens
+- Use meaningful `dataKey` names matching your data structure
+- Configure axes with appropriate labels and formatters
+- Set proper margins for labels and legends
+
+## Responsive Design
+- Wrap charts in `ResponsiveContainer` for fluid sizing
+- Adjust chart elements (font sizes, margins) for mobile
+- Consider hiding tooltips or simplifying charts on small screens
+- Use percentage-based dimensions where appropriate
+
+## Performance
+- Memoize chart components with `React.memo`
+- Avoid recalculating data on every render
+- Use `isAnimationActive={false}` for large datasets
+- Limit the number of data points for real-time charts
+
+## Accessibility
+- Provide meaningful labels and descriptions
+- Use sufficient color contrast for readability
+- Consider alternative data representations (tables)
+- Add ARIA labels where appropriate
+
+## Examples
+<example>
+// Good: Responsive, typed, reusable chart component
+interface RevenueData {
+  month: string;
+  revenue: number;
+}
+
+interface RevenueChartProps {
+  data: RevenueData[];
+}
+
+const COLORS = {
+  primary: '#3b82f6',
+  grid: '#e5e7eb',
+};
+
+export const RevenueChart = memo<RevenueChartProps>(({ data }) => {
+  if (data.length === 0) {
+    return <div>No data available</div>;
+  }
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+        <CartesianGrid stroke={COLORS.grid} strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line 
+          type="monotone" 
+          dataKey="revenue" 
+          stroke={COLORS.primary} 
+          strokeWidth={2}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+});
+</example>
+
+<bad-example>
+// Bad: No types, hardcoded dimensions, no error handling
+export function Chart({ data }) {
+  return (
+    <LineChart width={600} height={300} data={data}>
+      <Line dataKey="value" stroke="blue" />
+    </LineChart>
+  );
+}
+</bad-example>

@@ -1,0 +1,70 @@
+---
+description: Zustand state management patterns and best practices for React applications
+globs: src/stores/**/*.ts
+alwaysApply: false
+---
+# Zustand State Management Rules
+
+## Store Organization
+- Create separate stores for distinct domains (e.g., `useProjectStore`, `useWizardStore`)
+- Use TypeScript for type-safe store definitions
+- Keep store files in `src/stores/` directory
+- Export store hooks with `use` prefix
+
+## Store Definition Patterns
+- Use functional store creation with `create<StoreType>()`
+- Define clear TypeScript interfaces for state shape
+- Separate state properties from actions (methods)
+- Use `set()` and `get()` appropriately within actions
+
+## Persistence
+- Use `persist` middleware for data that should survive page reloads
+- Configure storage backend (localStorage/sessionStorage)
+- Define `name` key for storage identification
+- Consider partializing state to persist only necessary data
+
+## Selectors and Performance
+- Use selector functions to access specific state slices: `useStore(state => state.field)`
+- Avoid selecting entire store when only part is needed
+- Leverage shallow equality for object/array selections
+- Consider using `useShallow` for derived state
+
+## Best Practices
+- Keep actions colocated with state in the same store
+- Use immer middleware for complex nested state updates
+- Avoid storing derived data; compute on-the-fly or use selectors
+- Reset state explicitly when needed (e.g., on logout)
+
+## Examples
+<example>
+// Good: Type-safe store with clear actions
+interface ProjectState {
+  projects: Project[];
+  addProject: (project: Project) => void;
+}
+
+export const useProjectStore = create<ProjectState>()(
+  persist(
+    (set) => ({
+      projects: [],
+      addProject: (project) => set((state) => ({ 
+        projects: [...state.projects, project] 
+      })),
+    }),
+    { name: 'project-storage' }
+  )
+);
+
+// Usage with selector
+const projects = useProjectStore((state) => state.projects);
+</example>
+
+<bad-example>
+// Bad: No types, mixing concerns, direct state mutation
+export const useStore = create((set) => ({
+  data: {},
+  user: {},
+  ui: {},
+  update: (newData) => set({ data: newData }), // unclear action
+}));
+</bad-example>

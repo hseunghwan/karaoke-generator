@@ -1,0 +1,26 @@
+---
+description: Project technical stack definition
+alwaysApply: true
+---
+# Technical Stack
+Referenced in: [001-project-overview.mdc](001-project-overview.mdc)
+
+## Frontend
+- Framework: React 18 + Vite
+- Language: TypeScript
+- Styling: Tailwind CSS
+- State Management: Zustand (with persist middleware)
+- Routing: React Router DOM v6
+- Forms: React Hook Form + Zod
+- Charts: Recharts
+- Markdown: React Markdown
+- Icons: Lucide React
+- Utils: clsx, tailwind-merge
+
+## See also:
+- [003-development-guidelines.mdc](003-development-guidelines.mdc) for usage guidelines
+- [306-react-vite-tailwind-rules.mdc](306-react-vite-tailwind-rules.mdc) for React/Vite specific rules
+- [308-zustand-state-management-rules.mdc](308-zustand-state-management-rules.mdc) for state management
+- [309-react-router-v6-rules.mdc](309-react-router-v6-rules.mdc) for routing patterns
+- [310-react-hook-form-zod-rules.mdc](310-react-hook-form-zod-rules.mdc) for form validation
+- [311-recharts-visualization-rules.mdc](311-recharts-visualization-rules.mdc) for data visualization

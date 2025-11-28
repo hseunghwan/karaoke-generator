@@ -1,0 +1,94 @@
+---
+description: React Hook Form with Zod validation patterns for type-safe form handling
+globs: src/components/**/*Form*.tsx
+alwaysApply: false
+---
+# React Hook Form + Zod Validation Rules
+
+## Schema Definition
+- Define Zod schemas colocated with form components or in `src/schemas/`
+- Use TypeScript type inference with `z.infer<typeof schema>`
+- Leverage Zod refinements for complex validation logic
+- Create reusable schema fragments for common fields
+
+## Form Setup
+- Use `useForm` with `zodResolver` for validation
+- Type form data with inferred schema type
+- Set `mode` option for validation timing (onChange, onBlur, onSubmit)
+- Define default values matching schema shape
+
+## Field Registration
+- Use `register` for simple inputs
+- Use `Controller` for custom components or third-party libraries
+- Access field errors with `formState.errors`
+- Leverage `watch` for reactive form values
+
+## Form Submission
+- Handle submission with typed `onSubmit` handler
+- Use `handleSubmit` wrapper for validation
+- Implement error handling for async operations
+- Reset form after successful submission if needed
+
+## Error Handling
+- Display field errors near their inputs
+- Use descriptive error messages in Zod schema
+- Implement form-level error handling
+- Show loading states during async submissions
+
+## Best Practices
+- Keep validation logic in Zod schemas, not components
+- Use `setValue` and `reset` for programmatic updates
+- Implement proper TypeScript types throughout
+- Avoid manual error state management
+
+## Examples
+<example>
+// Good: Type-safe form with Zod validation
+const projectSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  description: z.string().optional(),
+  budget: z.number().min(0, "Budget must be positive"),
+});
+
+type ProjectFormData = z.infer<typeof projectSchema>;
+
+function ProjectForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ProjectFormData>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: { name: "", budget: 0 },
+  });
+
+  const onSubmit = async (data: ProjectFormData) => {
+    await saveProject(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register("name")} />
+      {errors.name && <span>{errors.name.message}</span>}
+      
+      <button type="submit" disabled={isSubmitting}>
+        Submit
+      </button>
+    </form>
+  );
+}
+</example>
+
+<bad-example>
+// Bad: Manual validation, no types
+function ProjectForm() {
+  const [errors, setErrors] = useState({});
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (name.length < 3) {
+      setErrors({ name: "Too short" });
+    }
+  };
+}
+</bad-example>

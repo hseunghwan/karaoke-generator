@@ -1,0 +1,77 @@
+---
+description: React Router v6 routing patterns and navigation best practices
+globs: src/pages/**/*.tsx
+alwaysApply: false
+---
+# React Router v6 Rules
+
+## Router Setup
+- Use `createBrowserRouter` for data-driven routing (v6.4+)
+- Define routes in a centralized configuration
+- Use `RouterProvider` at app root
+- Implement error boundaries with `errorElement`
+
+## Route Organization
+- Place page components in `src/pages/` directory
+- Use nested routes for layout hierarchies
+- Implement index routes for default child routes
+- Use `Outlet` in parent components for nested rendering
+
+## Navigation Patterns
+- Use `<Link>` or `<NavLink>` for declarative navigation
+- Use `useNavigate` hook for programmatic navigation
+- Prefer relative paths for nested routes
+- Use `NavLink` with `className` callback for active states
+
+## Data Loading
+- Use `loader` functions for data fetching (v6.4+)
+- Use `useLoaderData` hook to access loaded data
+- Implement `action` functions for form submissions
+- Handle loading states with `useNavigation` hook
+
+## Route Parameters
+- Define dynamic segments with `:paramName`
+- Access params with `useParams` hook
+- Use optional params with `?` suffix
+- Validate params in loader functions
+
+## Best Practices
+- Avoid inline route definitions; use configuration objects
+- Implement proper error handling with error boundaries
+- Use search params with `useSearchParams` for filters
+- Lazy load route components with `React.lazy`
+
+## Examples
+<example>
+// Good: Centralized router configuration with data loading
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    errorElement: <ErrorPage />,
+    children: [
+      { index: true, element: <HomePage /> },
+      {
+        path: "projects/:projectId",
+        element: <ProjectDetail />,
+        loader: projectLoader,
+      },
+    ],
+  },
+]);
+
+// Usage
+function App() {
+  return <RouterProvider router={router} />;
+}
+</example>
+
+<bad-example>
+// Bad: Old v5 patterns, no error handling
+<BrowserRouter>
+  <Switch>
+    <Route exact path="/" component={HomePage} />
+    <Route path="/projects/:id" component={ProjectDetail} />
+  </Switch>
+</BrowserRouter>
+</bad-example>
