@@ -1,0 +1,76 @@
+---
+description: Next.js App Router routing patterns and navigation best practices
+globs: app/**/*.tsx, app/**/*.ts
+alwaysApply: false
+---
+# Next.js App Router Rules
+
+## Router Setup
+- Use the **App Router** (`app/` directory).
+- File-system based routing: Folders define routes.
+- Special files: `page.tsx` (UI), `layout.tsx` (Wrapper), `loading.tsx` (Suspense fallback), `error.tsx` (Error boundary), `not-found.tsx`, `route.ts` (API endpoint).
+
+## Route Organization
+- Colocate components, tests, and styles inside the route segments if specific to that route.
+- Use `(group)` folders to organize routes without affecting the URL path.
+- Use `_components` folder (private folders) to exclude files from routing.
+- Use `[param]` for dynamic segments (e.g., `app/blog/[slug]/page.tsx`).
+
+## Navigation Patterns
+- Use `<Link>` from `next/link` for declarative navigation.
+- Use `useRouter` from `next/navigation` for programmatic navigation (requires `'use client'`).
+- Use `useSearchParams`, `usePathname` from `next/navigation` (requires `'use client'`).
+- Prefetching is automatic with `<Link>`.
+
+## Data Loading
+- Fetch data in **Server Components** using async/await.
+- Use **Server Actions** for mutations and form handling.
+- Avoid `useEffect` for initial data fetching; prefer Server Components.
+
+## Best Practices
+- **Layouts:** Use Root Layout (`app/layout.tsx`) for global UI (HTML/Body). Nested layouts for sections.
+- **Metadata:** Export `metadata` object or `generateMetadata` function in `page.tsx` or `layout.tsx`.
+- **Lazy Loading:** Use `next/dynamic` for client components or heavy libraries.
+- **API:** Use Route Handlers (`route.ts`) for backend logic if strictly necessary, but prefer Server Actions for mutations.
+
+## Examples
+<example>
+// app/blog/[slug]/page.tsx (Server Component)
+import { notFound } from 'next/navigation';
+
+interface PageProps {
+  params: { slug: string };
+}
+
+export default async function BlogPost({ params }: PageProps) {
+  const post = await getPost(params.slug); // Server-side fetch
+
+  if (!post) {
+    notFound();
+  }
+
+  return (
+    <article>
+      <h1 className="text-2xl font-bold">{post.title}</h1>
+      <div>{post.content}</div>
+    </article>
+  );
+}
+</example>
+
+<bad-example>
+// Bad: Client-side fetching for initial data
+'use client';
+import { useEffect, useState } from 'react';
+
+export default function BlogPost({ params }) {
+  const [post, setPost] = useState(null);
+
+  useEffect(() => {
+    fetch(`/api/posts/${params.slug}`).then(res => res.json()).then(setPost);
+  }, [params.slug]);
+
+  if (!post) return <div>Loading...</div>;
+  return <div>{post.title}</div>;
+}
+</bad-example>

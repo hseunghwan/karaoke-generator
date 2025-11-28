@@ -1,0 +1,57 @@
+---
+description: Zustand state management patterns and best practices for Next.js
+globs: src/stores/**/*.ts, app/**/*.tsx
+alwaysApply: false
+---
+# Zustand State Management Rules (Next.js)
+
+## Store Organization
+- Create separate stores for distinct domains.
+- Use TypeScript for type-safe definitions.
+- **Client-Only:** Zustand stores are client-side. Components using them must have `'use client'`.
+
+## Store Definition Patterns
+- Use `create<StoreType>()`.
+- Separate state properties from actions.
+- **SSR Safety:** For data that needs to match server render or be isolated per request, consider:
+  - Initializing the store in a Context Provider.
+  - Or ensuring the store is only used in components that don't require strict hydration matching (Client Components).
+  - Avoid global singletons if sensitive user data could leak between requests (though less risk in Serverless, it's best practice).
+
+## Persistence
+- Use `persist` middleware with `localStorage` or `sessionStorage`.
+- **Hydration:** Handle hydration mismatch by using a custom hook or `useEffect` to wait for mount if rendering persisted data immediately.
+
+## Selectors and Performance
+- Use selectors: `useStore(state => state.field)`.
+- Use `useShallow` for multiple fields.
+
+## Best Practices
+- Keep actions colocated.
+- **Server Components:** Do NOT use Zustand hooks directly in Server Components. Pass data as props or use a Client Component wrapper.
+- Reset state on logout.
+
+## Examples
+<example>
+// src/stores/useProjectStore.ts
+import { create } from 'zustand';
+
+interface ProjectState {
+  projects: Project[];
+  addProject: (p: Project) => void;
+}
+
+export const useProjectStore = create<ProjectState>((set) => ({
+  projects: [],
+  addProject: (project) => set((state) => ({ projects: [...state.projects, project] })),
+}));
+
+// app/components/ProjectList.tsx
+'use client';
+import { useProjectStore } from '@/stores/useProjectStore';
+
+export default function ProjectList() {
+  const projects = useProjectStore((state) => state.projects);
+  return <ul>{projects.map(p => <li key={p.id}>{p.name}</li>)}</ul>;
+}
+</example>
