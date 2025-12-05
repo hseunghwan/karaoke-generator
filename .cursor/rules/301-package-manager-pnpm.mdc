@@ -1,0 +1,27 @@
+---
+description: Enforces pnpm as the package manager and defines usage guidelines.
+globs: ["**/package.json", "**/pnpm-lock.yaml"]
+---
+# PACKAGE MANAGER RULES
+
+## 1. Enforce pnpm
+- **Strictly use `pnpm`** instead of `npm` or `yarn`.
+- **Lockfile:** Always commit `pnpm-lock.yaml`. Never use `package-lock.json` or `yarn.lock`.
+- if `package-lock.json` is found, delete it and run `pnpm install`.
+
+## 2. Command Mapping
+Use the following `pnpm` equivalents:
+- Install dependencies: `pnpm install` (NOT `npm install`)
+- Add package: `pnpm add <pkg>` (NOT `npm install <pkg>`)
+- Add dev package: `pnpm add -D <pkg>`
+- Run scripts: `pnpm dev`, `pnpm build`, `pnpm start`
+- Run specific binary: `pnpm dlx <command>` or `pnpm exec <command>`
+
+## 3. Best Practices
+- **Phantom Dependencies:** pnpm creates a non-flat node_modules. You must explicitly install any package you import. Do not rely on hoisted dependencies.
+- **Monorepo (if applicable):** Use `pnpm -w <cmd>` to run commands in the workspace root.
+- **CI/CD:** Ensure CI pipelines use `pnpm install --frozen-lockfile` for deterministic builds.
+
+## 4. Troubleshooting
+- If modules are missing, run `pnpm install` to verify `pnpm-lock.yaml` is in sync.
+- Use `pnpm store prune` to clear unused packages from the store if disk space is an issue.

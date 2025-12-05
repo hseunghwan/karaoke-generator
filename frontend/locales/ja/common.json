@@ -1,0 +1,66 @@
+{
+  "common": {
+    "dashboard": "ダッシュボード",
+    "create_job": "ジョブ作成",
+    "analytics": "分析",
+    "settings": "設定",
+    "loading": "読み込み中...",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "retry": "再試行",
+    "back": "戻る",
+    "next": "次へ",
+    "download": "ダウンロード"
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "new_job": "新規ジョブ",
+    "total_jobs": "総ジョブ数",
+    "completed": "完了",
+    "processing": "処理中",
+    "failed": "失敗",
+    "recent_jobs": "最近のジョブ",
+    "no_jobs": "ジョブが見つかりません。"
+  },
+  "job": {
+    "upload_media": "メディアアップロード",
+    "rights_check": "権利確認",
+    "settings": "設定",
+    "review": "確認",
+    "video_audio": "動画または音声ファイル",
+    "lyrics": "歌詞ファイル (任意)",
+    "title": "タイトル",
+    "artist": "アーティスト",
+    "platform": "プラットフォーム",
+    "template": "テンプレート",
+    "languages": "翻訳言語",
+    "source_lang": "元言語",
+    "status": {
+      "PENDING": "待機中",
+      "QUEUED": "キュー待ち",
+      "PROCESSING": "処理中",
+      "COMPLETED": "完了",
+      "FAILED": "失敗"
+    }
+  },
+  "rights": {
+    "check_risk": "権利リスク確認",
+    "checking": "確認中...",
+    "low_risk": "低リスク",
+    "medium_risk": "中リスク",
+    "high_risk": "高リスク",
+    "own_rights": "本コンテンツの権利を保有しているか、ライセンスを取得しています。"
+  },
+  "editor": {
+    "title": "字幕エディタ",
+    "reset": "リセット",
+    "save_changes": "変更を保存",
+    "original": "原文",
+    "translation": "翻訳",
+    "pronunciation": "発音",
+    "preview": "プレビュー"
+  }
+}
+

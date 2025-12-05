@@ -1,0 +1,66 @@
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "create_job": "Create Job",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "retry": "Retry",
+    "back": "Back",
+    "next": "Next",
+    "download": "Download"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "new_job": "New Job",
+    "total_jobs": "Total Jobs",
+    "completed": "Completed",
+    "processing": "Processing",
+    "failed": "Failed",
+    "recent_jobs": "Recent Jobs",
+    "no_jobs": "No jobs found."
+  },
+  "job": {
+    "upload_media": "Upload Media",
+    "rights_check": "Rights Check",
+    "settings": "Settings",
+    "review": "Review",
+    "video_audio": "Video or Audio File",
+    "lyrics": "Lyrics File (Optional)",
+    "title": "Title",
+    "artist": "Artist",
+    "platform": "Platform",
+    "template": "Template",
+    "languages": "Target Languages",
+    "source_lang": "Source Language",
+    "status": {
+      "PENDING": "Pending",
+      "QUEUED": "Queued",
+      "PROCESSING": "Processing",
+      "COMPLETED": "Completed",
+      "FAILED": "Failed"
+    }
+  },
+  "rights": {
+    "check_risk": "Check Rights Risk",
+    "checking": "Checking...",
+    "low_risk": "Low Risk",
+    "medium_risk": "Medium Risk",
+    "high_risk": "High Risk",
+    "own_rights": "I own the rights or have a license for this content."
+  },
+  "editor": {
+    "title": "Subtitle Editor",
+    "reset": "Reset",
+    "save_changes": "Save Changes",
+    "original": "Original",
+    "translation": "Translation",
+    "pronunciation": "Pronunciation",
+    "preview": "Preview"
+  }
+}
+
