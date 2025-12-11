@@ -4,3 +4,8 @@ export const i18nConfig = {
   prefixDefault: false, // ko인 경우 url에 /ko를 붙이지 않음 (선택 사항)
 };
 
+
+
+
+
+

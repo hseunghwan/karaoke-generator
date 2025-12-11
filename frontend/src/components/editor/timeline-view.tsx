@@ -103,3 +103,8 @@ export const TimelineView = ({ segments, currentTime, duration, onSeek }: Timeli
   );
 };
 
+
+
+
+
+

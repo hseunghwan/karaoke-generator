@@ -22,3 +22,8 @@ export const useJobStore = create<JobStore>((set) => ({
   setJobs: (jobs) => set({ jobs }),
 }));
 
+
+
+
+
+
