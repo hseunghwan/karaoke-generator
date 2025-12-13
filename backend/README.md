@@ -44,7 +44,8 @@ graph TD
     Demucs -->|Vocals/Inst Files| Storage
 
     Worker -->|Step B| Whisper
-    Whisper -->|Sync Data (JSON)| Storage
+    %% FIXED LINE BELOW: Changed to string syntax to handle parentheses
+    Whisper -- "Sync Data (JSON)" --> Storage
 
     Worker -->|Step C| LLM
     LLM -->|Translated Lyrics| Worker
