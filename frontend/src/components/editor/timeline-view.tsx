@@ -14,6 +14,7 @@ interface TimelineProps {
 export const TimelineView = ({ segments, currentTime, duration, onSeek }: TimelineProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
+  const [waveformHeights, setWaveformHeights] = useState<number[]>([]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -23,6 +24,10 @@ export const TimelineView = ({ segments, currentTime, duration, onSeek }: Timeli
         if (containerRef.current) setWidth(containerRef.current.clientWidth);
     };
     window.addEventListener('resize', handleResize);
+
+    // Generate static random heights on client-side only to avoid hydration mismatch
+    setWaveformHeights(Array.from({ length: 100 }, () => Math.random() * 100));
+
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -54,11 +59,11 @@ export const TimelineView = ({ segments, currentTime, duration, onSeek }: Timeli
       >
         {/* Mock Waveform Background */}
         <div className="absolute inset-0 opacity-20 flex items-center gap-[2px]">
-             {Array.from({ length: 100 }).map((_, i) => (
+             {waveformHeights.map((height, i) => (
                  <div
                     key={i}
                     className="w-full bg-slate-400"
-                    style={{ height: `${Math.random() * 100}%` }}
+                    style={{ height: `${height}%` }}
                  />
              ))}
         </div>
@@ -102,9 +107,3 @@ export const TimelineView = ({ segments, currentTime, duration, onSeek }: Timeli
     </div>
   );
 };
-
-
-
-
-
-
