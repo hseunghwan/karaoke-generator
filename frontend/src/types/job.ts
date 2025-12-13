@@ -1,4 +1,4 @@
-export type JobStatus = "PENDING" | "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED";
+export type JobStatus = "PENDING" | "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED" | "UPLOADING";
 
 export interface Job {
   id: string;
@@ -50,9 +50,3 @@ export const MOCK_JOBS: Job[] = [
     targetLanguages: ["fr"],
   },
 ];
-
-
-
-
-
-

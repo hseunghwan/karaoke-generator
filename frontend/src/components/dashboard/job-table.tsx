@@ -88,10 +88,10 @@ export const JobTable = ({ jobs }: JobTableProps) => {
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                   {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link href={`/jobs/${job.id}`}>
+                  <Link href={`/jobs/${job.id}/editor`}>
                     <Button variant="ghost" size="icon">
                       <ExternalLink className="h-4 w-4" />
                     </Button>
