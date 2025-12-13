@@ -6,14 +6,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { jobFormSchema, JobFormValues } from "./create-job-schema";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { FileUpload } from "./file-upload";
 import { RightsCheckStep } from "./rights-check-step";
 import { JobSettingsStep } from "./job-settings-step";
 import { toast } from "sonner";
-import { Check, ChevronRight, ChevronLeft } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, FileAudio, FileText, Music, Globe, Layers, Youtube } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from 'react-i18next';
+import { Separator } from "@/components/ui/separator";
 
 export const JobCreationWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -21,10 +22,10 @@ export const JobCreationWizard = () => {
   const { t } = useTranslation();
 
   const STEPS = [
-    { id: 1, title: t('job.upload_media') },
-    { id: 2, title: t('job.rights_check') },
-    { id: 3, title: t('job.settings') },
-    { id: 4, title: t('job.review') },
+    { id: 1, title: t('job.upload_media'), description: "Video or Audio" },
+    { id: 2, title: t('job.rights_check'), description: "Copyright" },
+    { id: 3, title: t('job.settings'), description: "Preferences" },
+    { id: 4, title: t('job.review'), description: "Confirmation" },
   ];
 
   const form = useForm<JobFormValues>({
@@ -76,57 +77,65 @@ export const JobCreationWizard = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Stepper Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between relative">
-          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-200 -z-10" />
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* Enhanced Stepper */}
+      <div className="relative">
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-muted -z-10 rounded-full" />
+        <div
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-primary transition-all duration-500 ease-in-out -z-10 rounded-full"
+          style={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
+        />
+        <div className="flex justify-between">
           {STEPS.map((step) => (
-            <div
-              key={step.id}
-              className={cn(
-                "flex flex-col items-center bg-white px-2",
-                currentStep >= step.id ? "text-primary" : "text-gray-400"
-              )}
-            >
+            <div key={step.id} className="flex flex-col items-center group">
               <div
                 className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center border-2 font-bold transition-colors",
+                  "w-10 h-10 rounded-full flex items-center justify-center border-4 transition-all duration-300 bg-background z-10",
                   currentStep > step.id
-                    ? "bg-green-500 border-green-500 text-white"
+                    ? "border-primary bg-primary text-primary-foreground"
                     : currentStep === step.id
-                    ? "bg-primary border-primary text-white"
-                    : "bg-white border-gray-300 text-gray-400"
+                      ? "border-primary text-primary shadow-lg scale-110"
+                      : "border-muted text-muted-foreground"
                 )}
               >
-                {currentStep > step.id ? <Check className="w-6 h-6" /> : step.id}
+                {currentStep > step.id ? <Check className="w-5 h-5" /> : step.id}
               </div>
-              <span className="text-sm font-medium mt-2">{step.title}</span>
+              <div className="mt-3 text-center">
+                <p className={cn(
+                  "text-sm font-semibold transition-colors duration-300",
+                  currentStep >= step.id ? "text-foreground" : "text-muted-foreground"
+                )}>
+                  {step.title}
+                </p>
+                <p className="text-xs text-muted-foreground hidden sm:block">
+                  {step.description}
+                </p>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{STEPS[currentStep - 1].title}</CardTitle>
+      <Card className="border shadow-lg">
+        <CardHeader className="border-b bg-muted/30 pb-6">
+          <CardTitle className="text-xl">{STEPS[currentStep - 1].title}</CardTitle>
           <CardDescription>
-            Step {currentStep} of {STEPS.length}
+            Step {currentStep} of {STEPS.length} - {STEPS[currentStep - 1].description}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-8 min-h-[400px]">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
               {/* Step 1: Upload */}
               {currentStep === 1 && (
-                <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-8">
                   <FormField
                     control={form.control}
                     name="mediaFile"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('job.video_audio')}</FormLabel>
+                        <FormLabel className="text-base font-semibold">{t('job.video_audio')}</FormLabel>
                         <FormControl>
                           <FileUpload
                             value={field.value}
@@ -143,12 +152,18 @@ export const JobCreationWizard = () => {
                       </FormItem>
                     )}
                   />
+
+                  <Separator />
+
                   <FormField
                     control={form.control}
                     name="lyricsFile"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('job.lyrics')}</FormLabel>
+                        <FormLabel className="text-base font-semibold">
+                          {t('job.lyrics')}
+                          <span className="ml-2 text-xs font-normal text-muted-foreground">(Optional)</span>
+                        </FormLabel>
                         <FormControl>
                           <FileUpload
                             value={field.value}
@@ -157,11 +172,12 @@ export const JobCreationWizard = () => {
                               "text/plain": [".txt", ".lrc"],
                             }}
                             label={t('job.lyrics')}
-                            description="TXT, LRC (Optional)"
+                            description="TXT, LRC (Drag & drop or click)"
+                            compact
                           />
                         </FormControl>
                         <FormDescription>
-                          If skipped, we will attempt auto-transcription.
+                          If skipped, we will attempt auto-transcription from the audio.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -182,57 +198,96 @@ export const JobCreationWizard = () => {
 
               {/* Step 4: Review */}
               {currentStep === 4 && (
-                <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                    <h3 className="font-semibold text-lg">Summary</h3>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <span className="text-gray-500">File:</span>
-                      <span>{form.getValues("mediaFile")?.name}</span>
+                <div className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <Card className="bg-muted/30 border-0">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <FileAudio className="w-5 h-5 text-primary" />
+                          Media & Rights
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-[100px_1fr] gap-2 text-sm">
+                          <span className="text-muted-foreground">File Name:</span>
+                          <span className="font-medium truncate">{form.getValues("mediaFile")?.name}</span>
 
-                      <span className="text-gray-500">{t('job.title')}:</span>
-                      <span>{form.getValues("title")}</span>
+                          <span className="text-muted-foreground">Title:</span>
+                          <span className="font-medium">{form.getValues("title")}</span>
 
-                      <span className="text-gray-500">{t('job.artist')}:</span>
-                      <span>{form.getValues("artist")}</span>
+                          <span className="text-muted-foreground">Artist:</span>
+                          <span className="font-medium">{form.getValues("artist")}</span>
 
-                      <span className="text-gray-500">{t('job.platform')}:</span>
-                      <span>{form.getValues("platform")}</span>
+                          <span className="text-muted-foreground">Rights:</span>
+                          <span className="font-medium flex items-center gap-1 text-green-600">
+                            <Check className="w-3 h-3" /> Confirmed
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                      <span className="text-gray-500">{t('job.template')}:</span>
-                      <span>{form.getValues("template")}</span>
+                    <Card className="bg-muted/30 border-0">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Layers className="w-5 h-5 text-primary" />
+                          Output Settings
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-[100px_1fr] gap-2 text-sm">
+                          <span className="text-muted-foreground">Platform:</span>
+                          <span className="font-medium">{form.getValues("platform")}</span>
 
-                      <span className="text-gray-500">{t('job.languages')}:</span>
-                      <span>{form.getValues("targetLanguages")?.join(", ")}</span>
+                          <span className="text-muted-foreground">Template:</span>
+                          <span className="font-medium capitalize">{form.getValues("template")}</span>
+
+                          <span className="text-muted-foreground">Source:</span>
+                          <span className="font-medium uppercase">{form.getValues("sourceLanguage")}</span>
+
+                          <span className="text-muted-foreground">Target:</span>
+                          <span className="font-medium">
+                            {form.getValues("targetLanguages")?.map(l => l.toUpperCase()).join(", ")}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="bg-blue-50 text-blue-800 p-4 rounded-lg flex items-start gap-3 text-sm">
+                    <Music className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold">Ready to generate?</p>
+                      <p>This process will deduct 1 credit from your account. The generation typically takes 2-3 minutes.</p>
                     </div>
                   </div>
                 </div>
               )}
-
-              <div className="flex justify-between pt-6 border-t">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 1}
-                >
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  {t('common.back')}
-                </Button>
-
-                {currentStep < STEPS.length ? (
-                  <Button type="button" onClick={nextStep}>
-                    {t('common.next')}
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                    {t('common.create_job')}
-                  </Button>
-                )}
-              </div>
             </form>
           </Form>
         </CardContent>
+        <CardFooter className="flex justify-between border-t bg-muted/10 py-6">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={prevStep}
+            disabled={currentStep === 1}
+            className="pl-0 hover:pl-2 transition-all"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            {t('common.back')}
+          </Button>
+
+          {currentStep < STEPS.length ? (
+            <Button type="button" onClick={nextStep} className="pr-4 hover:pr-6 transition-all">
+              {t('common.next')}
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          ) : (
+            <Button type="button" onClick={form.handleSubmit(onSubmit)} className="bg-green-600 hover:bg-green-700 min-w-[140px]">
+              {t('common.create_job')}
+            </Button>
+          )}
+        </CardFooter>
       </Card>
     </div>
   );

@@ -11,10 +11,10 @@ export default async function CreateJobPage({ params }: { params: Promise<{ loca
   const { t } = await initTranslations(locale, ['job']);
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="max-w-5xl mx-auto">
+      <div className="mb-10 text-center space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">{t('create_job', { ns: 'common' })}</h2>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-lg">
           {t('upload_media')}
         </p>
       </div>

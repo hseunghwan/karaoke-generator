@@ -45,63 +45,61 @@ const StatusBadge = ({ status }: { status: JobStatus }) => {
 
 export const JobTable = ({ jobs }: JobTableProps) => {
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Job Info</TableHead>
+          <TableHead>Platform</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Created</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {jobs.length === 0 ? (
           <TableRow>
-            <TableHead>Job Info</TableHead>
-            <TableHead>Platform</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableCell colSpan={5} className="h-24 text-center">
+              No jobs found.
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {jobs.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
-                No jobs found.
+        ) : (
+          jobs.map((job) => (
+            <TableRow key={job.id}>
+              <TableCell>
+                <div className="flex flex-col">
+                  <span className="font-medium">{job.title}</span>
+                  <span className="text-xs text-muted-foreground">{job.artist}</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary" className="text-xs">
+                  {job.platform}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={job.status} />
+                  {job.status === "PROCESSING" && (
+                    <span className="text-xs text-muted-foreground">
+                      {job.progress}%
+                    </span>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
+              </TableCell>
+              <TableCell className="text-right">
+                <Link href={`/jobs/${job.id}/editor`}>
+                  <Button variant="ghost" size="icon">
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </Link>
               </TableCell>
             </TableRow>
-          ) : (
-            jobs.map((job) => (
-              <TableRow key={job.id}>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{job.title}</span>
-                    <span className="text-xs text-muted-foreground">{job.artist}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="text-xs">
-                    {job.platform}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={job.status} />
-                    {job.status === "PROCESSING" && (
-                      <span className="text-xs text-muted-foreground">
-                        {job.progress}%
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Link href={`/jobs/${job.id}/editor`}>
-                    <Button variant="ghost" size="icon">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+          ))
+        )}
+      </TableBody>
+    </Table>
   );
 };
