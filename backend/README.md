@@ -58,8 +58,8 @@ graph TD
     API -.->|Poll Status| DB
 
     %% Styles
-    classDef ai fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef storage fill:#ff9,stroke:#333,stroke-width:2px;
+    classDef ai fill:#a3d,stroke:#333,stroke-width:2px;
+    classDef storage fill:#f79,stroke:#333,stroke-width:2px;
     class Demucs,Whisper,LLM,FFmpeg ai;
     class Storage,DB,Broker storage;
 ```
