@@ -37,6 +37,13 @@
     "template": "Template",
     "languages": "Target Languages",
     "source_lang": "Source Language",
+    "input_type": "Input Type",
+    "file_upload": "File Upload",
+    "url_input": "URL Input",
+    "enter_url": "Enter URL",
+    "url_placeholder": "Ex: https://youtube.com/watch?v=...",
+    "invalid_url": "Invalid URL",
+    "media_required": "Please upload a file or enter a URL",
     "status": {
       "PENDING": "Pending",
       "QUEUED": "Queued",
@@ -63,9 +70,3 @@
     "preview": "Preview"
   }
 }
-
-
-
-
-
-

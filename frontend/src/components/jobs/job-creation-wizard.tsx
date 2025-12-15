@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 
 export const JobCreationWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [inputType, setInputType] = useState<'file' | 'url'>('file');
   const [isRightsValid, setIsRightsValid] = useState(false);
   const { t } = useTranslation();
 
@@ -55,7 +57,15 @@ export const JobCreationWizard = () => {
     let fieldsToValidate: (keyof JobFormValues)[] = [];
 
     if (currentStep === 1) {
-      fieldsToValidate = ["mediaFile", "lyricsFile"];
+      fieldsToValidate = ["mediaFile", "mediaUrl", "lyricsFile"];
+      // Clear error of the other type to avoid confusion and ensure correct validation
+      if (inputType === 'file') {
+        form.setValue("mediaUrl", "");
+        form.clearErrors("mediaUrl");
+      } else {
+        form.setValue("mediaFile", undefined);
+        form.clearErrors("mediaFile");
+      }
     } else if (currentStep === 2) {
       if (!isRightsValid) {
         toast.error("Please resolve rights risks before proceeding.");
@@ -130,28 +140,70 @@ export const JobCreationWizard = () => {
               {/* Step 1: Upload */}
               {currentStep === 1 && (
                 <div className="grid grid-cols-1 gap-8">
-                  <FormField
-                    control={form.control}
-                    name="mediaFile"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base font-semibold">{t('job.video_audio')}</FormLabel>
-                        <FormControl>
-                          <FileUpload
-                            value={field.value}
-                            onChange={field.onChange}
-                            accept={{
-                              "video/*": [],
-                              "audio/*": [],
-                            }}
-                            label={t('job.upload_media')}
-                            description="MP4, MP3, WAV (Max 500MB)"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="flex gap-4">
+                    <Button
+                      type="button"
+                      variant={inputType === 'file' ? 'default' : 'outline'}
+                      onClick={() => setInputType('file')}
+                      className="flex-1"
+                    >
+                      {t('job.file_upload')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={inputType === 'url' ? 'default' : 'outline'}
+                      onClick={() => setInputType('url')}
+                      className="flex-1"
+                    >
+                      {t('job.url_input')}
+                    </Button>
+                  </div>
+
+                  {inputType === 'file' ? (
+                    <FormField
+                      control={form.control}
+                      name="mediaFile"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-semibold">{t('job.video_audio')}</FormLabel>
+                          <FormControl>
+                            <FileUpload
+                              value={field.value}
+                              onChange={field.onChange}
+                              accept={{
+                                "video/*": [],
+                                "audio/*": [],
+                              }}
+                              label={t('job.upload_media')}
+                              description="MP4, MP3, WAV (Max 500MB)"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ) : (
+                    <FormField
+                      control={form.control}
+                      name="mediaUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-semibold">{t('job.enter_url')}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t('job.url_placeholder')}
+                              {...field}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            YouTube, TikTok, or direct audio/video links supported.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <Separator />
 
@@ -210,7 +262,9 @@ export const JobCreationWizard = () => {
                       <CardContent className="space-y-4">
                         <div className="grid grid-cols-[100px_1fr] gap-2 text-sm">
                           <span className="text-muted-foreground">File Name:</span>
-                          <span className="font-medium truncate">{form.getValues("mediaFile")?.name}</span>
+                          <span className="font-medium truncate">
+                            {form.getValues("mediaFile")?.name || form.getValues("mediaUrl") || "N/A"}
+                          </span>
 
                           <span className="text-muted-foreground">Title:</span>
                           <span className="font-medium">{form.getValues("title")}</span>

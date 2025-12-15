@@ -8,14 +8,14 @@ export const metadata = {
 
 export default async function CreateJobPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const { t } = await initTranslations(locale, ['job']);
+  const { t } = await initTranslations(locale, ['common']);
 
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-10 text-center space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">{t('create_job', { ns: 'common' })}</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t('common.create_job')}</h2>
         <p className="text-muted-foreground text-lg">
-          {t('upload_media')}
+          {t('job.upload_media')}
         </p>
       </div>
       <JobCreationWizard />

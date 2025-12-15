@@ -37,6 +37,13 @@
     "template": "テンプレート",
     "languages": "翻訳言語",
     "source_lang": "元言語",
+    "input_type": "入力タイプ",
+    "file_upload": "ファイルアップロード",
+    "url_input": "URL入力",
+    "enter_url": "URLを入力してください",
+    "url_placeholder": "例: https://youtube.com/watch?v=...",
+    "invalid_url": "無効なURLです",
+    "media_required": "ファイルをアップロードするかURLを入力してください",
     "status": {
       "PENDING": "待機中",
       "QUEUED": "キュー待ち",
@@ -63,9 +70,3 @@
     "preview": "プレビュー"
   }
 }
-
-
-
-
-
-

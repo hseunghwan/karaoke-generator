@@ -1,7 +1,7 @@
 import os
 import time
 from app.worker.celery_app import celery_app
-from app.services import audio_separation, transcription, synthesis
+from app.services import audio_separation, transcription, synthesis, media_downloader
 
 @celery_app.task(bind=True)
 def process_audio(self, job_id: str, file_path: str):
@@ -11,6 +11,11 @@ def process_audio(self, job_id: str, file_path: str):
     try:
         # Update status to PROCESSING
         print(f"Processing audio for job {job_id}")
+
+        # Check if file_path is a URL and download if necessary
+        if file_path.startswith("http://") or file_path.startswith("https://"):
+             print(f"Downloading media from {file_path}")
+             file_path = media_downloader.download_media(file_path)
 
         # Call Demucs service
         separated_paths = audio_separation.separate_audio(file_path)
