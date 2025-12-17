@@ -68,14 +68,59 @@ Located in `/backend`. Handles heavy computation and AI processing.
   - `app/worker/`: Celery tasks for AI processing.
   - `app/services/`: Core logic (Audio, STT, Video).
 
-## 🚀 Getting Started
+## 🚀 실행 방법 (Getting Started)
 
-### Prerequisites
+### 사전 요구사항 (Prerequisites)
 - Docker & Docker Compose
-- Node.js 18+
+- Node.js 18+ (pnpm 권장)
 - Python 3.10+
+- Redis Server (로컬 실행 시 필요)
 
-### Run Everything
+### 1. 전체 실행 (Docker Compose)
+가장 간편하게 모든 서비스를 실행하는 방법입니다.
+
 ```bash
 docker-compose up --build
 ```
+
+### 2. 수동 실행 (Manual Setup)
+개발 및 디버깅을 위해 각 서비스를 개별적으로 실행하는 방법입니다. 총 4개의 터미널이 필요합니다.
+
+#### Step 1: Redis 실행 (메시지 큐)
+백엔드와 워커 간의 통신을 위해 Redis가 실행 중이어야 합니다.
+```bash
+redis-server
+```
+
+#### Step 2: 백엔드 API 서버 실행
+FastAPI 서버를 8000번 포트에서 실행합니다.
+```bash
+cd backend
+# 가상환경 생성 및 활성화 (선택사항)
+# python -m venv venv
+# source venv/bin/activate
+
+# 의존성 설치
+pip install -r requirements.txt
+
+# 서버 실행
+uvicorn app.main:app --reload --port 8000
+```
+
+#### Step 3: Celery 워커 실행
+실제 AI 작업을 처리하는 백그라운드 워커를 실행합니다.
+```bash
+cd backend
+# 백엔드와 동일한 환경에서 실행
+celery -A app.worker.celery_app worker --loglevel=info
+```
+
+#### Step 4: 프론트엔드 실행
+Next.js 개발 서버를 3000번 포트에서 실행합니다.
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+
+이제 브라우저에서 `http://localhost:3000`으로 접속하여 서비스를 이용할 수 있습니다.

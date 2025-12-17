@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Activity, CheckCircle2, Clock, XCircle, ListMusic } from "lucide-react";
 import Link from "next/link";
-import { MOCK_JOBS } from "@/types/job";
+import { api } from "@/lib/api";
+import { Job } from "@/types/job";
+import { toast } from "sonner";
 import { useJobStore } from "@/store/use-job-store";
-import { useEffect, useState } from "react";
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardPage() {
   const { jobs, setJobs } = useJobStore();
@@ -16,24 +18,36 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"ALL" | "PROCESSING" | "COMPLETED">("ALL");
 
   useEffect(() => {
-    // Initialize store with mock data only once
-    if (jobs.length === 0) {
-      setJobs(MOCK_JOBS);
-    }
-  }, [setJobs, jobs.length]);
+    let isMounted = true;
 
-  // Simulate realtime updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      useJobStore.getState().updateJobStatus(
-        "job-2",
-        "PROCESSING",
-        Math.min((useJobStore.getState().jobs.find(j => j.id === "job-2")?.progress || 0) + 5, 100)
-      );
-    }, 3000);
+    const fetchJobs = async () => {
+      try {
+        const { data } = await api.get<Job[]>("/jobs");
+        if (!isMounted) return;
 
-    return () => clearInterval(interval);
-  }, []);
+        // Check for completions
+        const currentJobs = useJobStore.getState().jobs;
+        data.forEach((newJob) => {
+          const oldJob = currentJobs.find((j) => j.id === newJob.id);
+          if (oldJob && oldJob.status !== "COMPLETED" && newJob.status === "COMPLETED") {
+            toast.success(`Job "${newJob.title}" completed!`);
+          }
+        });
+
+        setJobs(data);
+      } catch (error) {
+        console.error("Failed to fetch jobs", error);
+      }
+    };
+
+    fetchJobs(); // Initial fetch
+    const interval = setInterval(fetchJobs, 3000); // Poll every 3s
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [setJobs]);
 
   const filteredJobs = jobs.filter((job) => {
     if (activeTab === "ALL") return true;

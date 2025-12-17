@@ -17,7 +17,11 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from 'react-i18next';
 import { Separator } from "@/components/ui/separator";
 
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+
 export const JobCreationWizard = () => {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [inputType, setInputType] = useState<'file' | 'url'>('file');
   const [isRightsValid, setIsRightsValid] = useState(false);
@@ -33,24 +37,47 @@ export const JobCreationWizard = () => {
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: {
+      title: "",
+      artist: "",
       rightsOwned: false,
       targetLanguages: [],
       template: "standard",
+      platform: "YOUTUBE",
+      sourceLanguage: "ko",
     },
     mode: "onChange",
   });
 
   const onSubmit = async (data: JobFormValues) => {
     console.log("Form Data:", data);
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-      {
-        loading: t('common.loading'),
-        success: 'Job created successfully! Redirecting...',
-        error: 'Failed to create job',
-      }
-    );
-    // TODO: Call API to create job
+
+    try {
+      const payload = {
+        title: data.title,
+        artist: data.artist,
+        platform: data.platform,
+        sourceLanguage: data.sourceLanguage,
+        targetLanguages: data.targetLanguages,
+        template: data.template,
+        mediaUrl: data.mediaUrl,
+        useMockData: !data.mediaUrl || data.mediaUrl.trim() === "",
+      };
+
+      await api.post("/jobs", payload);
+
+      toast.success('Job created successfully! Redirecting...', {
+        duration: 2000,
+      });
+
+      // Delay navigation slightly to show toast
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1500);
+
+    } catch (error) {
+      console.error("Job creation failed:", error);
+      toast.error('Failed to create job. Please try again.');
+    }
   };
 
   const nextStep = async () => {
@@ -337,7 +364,7 @@ export const JobCreationWizard = () => {
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
-            <Button type="button" onClick={form.handleSubmit(onSubmit)} className="bg-green-600 hover:bg-green-700 min-w-[140px]">
+            <Button type="button" onClick={form.handleSubmit(onSubmit, (e) => console.error(e))} className="bg-green-600 hover:bg-green-700 min-w-[140px]">
               {t('common.create_job')}
             </Button>
           )}

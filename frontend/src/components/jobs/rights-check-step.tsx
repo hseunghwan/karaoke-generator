@@ -124,13 +124,13 @@ export const RightsCheckStep = ({ form, onValidationChange }: RightsCheckStepPro
           <Card className={cn(
             "border shadow-sm animate-in fade-in slide-in-from-top-2 duration-300",
             riskLevel === "LOW" ? "border-green-200 bg-green-50/50" :
-            riskLevel === "MEDIUM" ? "border-yellow-200 bg-yellow-50/50" :
-            "border-red-200 bg-red-50/50"
+              riskLevel === "MEDIUM" ? "border-yellow-200 bg-yellow-50/50" :
+                "border-red-200 bg-red-50/50"
           )}>
             <CardContent className="p-6 flex items-start gap-4">
               <div className={cn("p-2 rounded-full shrink-0",
-                 riskLevel === "LOW" ? "bg-green-100" :
-                 riskLevel === "MEDIUM" ? "bg-yellow-100" : "bg-red-100"
+                riskLevel === "LOW" ? "bg-green-100" :
+                  riskLevel === "MEDIUM" ? "bg-yellow-100" : "bg-red-100"
               )}>
                 {riskLevel === "LOW" && <CheckCircle className="h-6 w-6 text-green-600" />}
                 {riskLevel === "MEDIUM" && <AlertTriangle className="h-6 w-6 text-yellow-600" />}
@@ -140,15 +140,15 @@ export const RightsCheckStep = ({ form, onValidationChange }: RightsCheckStepPro
               <div className="space-y-1">
                 <h4 className={cn("font-bold text-lg",
                   riskLevel === "LOW" ? "text-green-800" :
-                  riskLevel === "MEDIUM" ? "text-yellow-800" :
-                  "text-red-800"
+                    riskLevel === "MEDIUM" ? "text-yellow-800" :
+                      "text-red-800"
                 )}>
                   Risk Level: {riskLevel === "LOW" ? t('rights.low_risk') : riskLevel === "MEDIUM" ? t('rights.medium_risk') : t('rights.high_risk')}
                 </h4>
                 <p className={cn("text-sm",
-                   riskLevel === "LOW" ? "text-green-700" :
-                   riskLevel === "MEDIUM" ? "text-yellow-700" :
-                   "text-red-700"
+                  riskLevel === "LOW" ? "text-green-700" :
+                    riskLevel === "MEDIUM" ? "text-yellow-700" :
+                      "text-red-700"
                 )}>
                   {riskLevel === "LOW" && "Low risk of copyright strike. Safe to proceed."}
                   {riskLevel === "MEDIUM" && "Moderate risk. Please ensure you have fair use justification."}
@@ -156,9 +156,9 @@ export const RightsCheckStep = ({ form, onValidationChange }: RightsCheckStepPro
                 </p>
 
                 {riskLevel === "HIGH" && (
-                   <div className="mt-3 text-xs font-semibold text-red-600 bg-white/50 p-2 rounded border border-red-200 inline-block">
-                     ⚠️ Processing blocked by safety policy.
-                   </div>
+                  <div className="mt-3 text-xs font-semibold text-red-600 bg-white/50 p-2 rounded border border-red-200 inline-block">
+                    ⚠️ Processing blocked by safety policy.
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -176,10 +176,11 @@ export const RightsCheckStep = ({ form, onValidationChange }: RightsCheckStepPro
                 checked={field.value}
                 onCheckedChange={field.onChange}
                 className="mt-1"
+                onClick={(e) => e.stopPropagation()}
               />
             </FormControl>
             <div className="space-y-1 leading-none cursor-pointer">
-              <FormLabel className="text-base font-medium cursor-pointer">
+              <FormLabel className="text-base font-medium cursor-pointer" onClick={(e) => e.stopPropagation()}>
                 {t('rights.own_rights')}
               </FormLabel>
               <FormDescription>

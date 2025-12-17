@@ -5,7 +5,6 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { Sidebar } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // We might need to create this or handle Title a11y differently if not available, but SheetContent requires DialogContent which requires DialogTitle.
 
 export const MobileSidebar = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -32,9 +31,3 @@ export const MobileSidebar = () => {
     </Sheet>
   );
 };
-
-
-
-
-
-
