@@ -10,6 +10,7 @@ celery_app = Celery(
 celery_app.conf.task_routes = {
     "app.worker.tasks.process_audio": "main-queue",
     "app.worker.tasks.process_lyrics": "main-queue",
+    "app.worker.tasks.process_linguistics": "main-queue",
     "app.worker.tasks.render_video": "main-queue",
 }
 

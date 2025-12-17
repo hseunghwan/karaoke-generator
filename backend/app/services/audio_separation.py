@@ -2,6 +2,7 @@ import os
 import subprocess
 from app.core.config import settings
 
+
 def separate_audio(input_path: str, output_dir: str = None) -> dict:
     """
     Separates audio into vocals and instrumental using Demucs.
@@ -18,13 +19,18 @@ def separate_audio(input_path: str, output_dir: str = None) -> dict:
     # The plan suggests: demucs.separate.main(["--two-stems", "vocals", "-n", "htdemucs", input_path])
 
     # Mocking implementation for now as we might not have GPU in this environment
-    print(f"Mock: Running Demucs on {input_path}")
+    # print(f"Mock: Running Demucs on {input_path}")
 
     # In real implementation:
-    # import demucs.separate
-    # demucs.separate.main(["-n", "htdemucs", "--two-stems", "vocals", "-o", output_dir, input_path])
+    import demucs.separate
 
-    filename = os.path.basename(input_path).split('.')[0]
+    demucs.separate.main(
+        ["-n", "htdemucs", "--two-stems", "vocals", "-o", output_dir, input_path]
+    )
+
+    # print(f"Mock: Running Demucs on {input_path}")
+    filename = os.path.basename(input_path).split(".")[0]
+
     model_name = "htdemucs"
 
     # Expected output paths (Demucs structure: output_dir/model_name/filename/vocals.wav)
@@ -33,7 +39,4 @@ def separate_audio(input_path: str, output_dir: str = None) -> dict:
     instrumental_path = os.path.join(base_out, "no_vocals.wav")
 
     # Return dummy paths for now if not running actual inference
-    return {
-        "vocals": vocals_path,
-        "instrumental": instrumental_path
-    }
+    return {"vocals": vocals_path, "instrumental": instrumental_path}

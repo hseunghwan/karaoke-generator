@@ -91,6 +91,19 @@ graph TD
 - Docker & Docker Compose
 - Python 3.10+ (로컬 개발 시)
 
+### 실행 준비
+```bash
+cd backend
+# 가상환경 진입
+source venv/bin/activate
+
+# 패키지 설피 필요시
+pip install -r requirements.txt
+
+# 실행
+uvicorn app.main:app --reload --port 8000
+```
+
 ### 서비스 실행
 ```bash
 # 전체 서비스 실행 (API + Redis + Worker)

@@ -1,14 +1,34 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from app.schemas.job import JobCreate, JobStatus
 from app.worker.tasks import create_karaoke_job
 from app.core.redis import get_redis_client
+from app.core.config import settings
 from datetime import datetime
 import uuid
 import json
 import time
+import os
+import shutil
 
 router = APIRouter()
 redis_client = get_redis_client()
+
+@router.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """
+    Local file upload for development/testing.
+    Returns the server-side file path to be used in create_job.
+    """
+    try:
+        os.makedirs(settings.TEMP_DIR, exist_ok=True)
+        file_path = os.path.join(settings.TEMP_DIR, file.filename)
+
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        return {"filename": file.filename, "file_path": file_path}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
 @router.post("/", response_model=JobStatus)
 async def create_job(job: JobCreate):
