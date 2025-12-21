@@ -33,3 +33,4 @@ def download_media(url: str, output_dir: str = None) -> str:
         file_path = os.path.join(output_dir, filename)
 
         return file_path
+

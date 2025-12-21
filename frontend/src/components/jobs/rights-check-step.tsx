@@ -18,7 +18,6 @@ import { AlertTriangle, CheckCircle, XCircle, Loader2, ShieldCheck, HelpCircle }
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useTranslation } from 'react-i18next';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RightsCheckStepProps {
   form: UseFormReturn<JobFormValues>;

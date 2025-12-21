@@ -41,9 +41,3 @@ export const MOCK_SUBTITLES: SubtitleSegment[] = [
     pronunciation: "Geurigo naega yeowang-in geot gata",
   },
 ];
-
-
-
-
-
-

@@ -21,7 +21,7 @@ export const TimelineView = ({ segments, currentTime, duration, onSeek }: Timeli
       setWidth(containerRef.current.clientWidth);
     }
     const handleResize = () => {
-        if (containerRef.current) setWidth(containerRef.current.clientWidth);
+      if (containerRef.current) setWidth(containerRef.current.clientWidth);
     };
     window.addEventListener('resize', handleResize);
 
@@ -41,8 +41,8 @@ export const TimelineView = ({ segments, currentTime, duration, onSeek }: Timeli
 
   // simple milliseconds to pixels conversion for visualization
   const msToPx = (ms: number) => {
-      if (duration === 0) return 0;
-      return (ms / duration) * 100;
+    if (duration === 0) return 0;
+    return (ms / duration) * 100;
   };
 
   return (
@@ -59,50 +59,50 @@ export const TimelineView = ({ segments, currentTime, duration, onSeek }: Timeli
       >
         {/* Mock Waveform Background */}
         <div className="absolute inset-0 opacity-20 flex items-center gap-[2px]">
-             {waveformHeights.map((height, i) => (
-                 <div
-                    key={i}
-                    className="w-full bg-slate-400"
-                    style={{ height: `${height}%` }}
-                 />
-             ))}
+          {waveformHeights.map((height, i) => (
+            <div
+              key={i}
+              className="w-full bg-slate-400"
+              style={{ height: `${height}%` }}
+            />
+          ))}
         </div>
 
         {/* Playhead */}
         <div
-            className="absolute top-0 bottom-0 w-[2px] bg-red-500 z-20 pointer-events-none transition-all duration-75"
-            style={{ left: `${msToPx(currentTime)}%` }}
+          className="absolute top-0 bottom-0 w-[2px] bg-red-500 z-20 pointer-events-none transition-all duration-75"
+          style={{ left: `${msToPx(currentTime)}%` }}
         >
-            <div className="w-3 h-3 -ml-[5px] bg-red-500 transform rotate-45 -mt-1.5" />
+          <div className="w-3 h-3 -ml-[5px] bg-red-500 transform rotate-45 -mt-1.5" />
         </div>
 
         {/* Subtitle Blocks */}
         {segments.map((seg) => {
-            const startPct = msToPx(seg.startTime);
-            const widthPct = msToPx(seg.endTime - seg.startTime);
-            const isActive = currentTime >= seg.startTime && currentTime <= seg.endTime;
+          const startPct = msToPx(seg.startTime);
+          const widthPct = msToPx(seg.endTime - seg.startTime);
+          const isActive = currentTime >= seg.startTime && currentTime <= seg.endTime;
 
-            return (
-                <div
-                    key={seg.id}
-                    className={cn(
-                        "absolute top-1/2 -translate-y-1/2 h-12 rounded-md border border-white/20 flex items-center justify-center px-2 overflow-hidden text-[10px] text-white/90 transition-colors",
-                        isActive ? "bg-blue-600/80 border-blue-400 z-10" : "bg-slate-700/80 hover:bg-slate-600/80"
-                    )}
-                    style={{
-                        left: `${startPct}%`,
-                        width: `${widthPct}%`
-                    }}
-                    title={seg.text}
-                >
-                    <span className="truncate">{seg.text}</span>
-                </div>
-            );
+          return (
+            <div
+              key={seg.id}
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 h-12 rounded-md border border-white/20 flex items-center justify-center px-2 overflow-hidden text-[10px] text-white/90 transition-colors",
+                isActive ? "bg-blue-600/80 border-blue-400 z-10" : "bg-slate-700/80 hover:bg-slate-600/80"
+              )}
+              style={{
+                left: `${startPct}%`,
+                width: `${widthPct}%`
+              }}
+              title={seg.text}
+            >
+              <span className="truncate">{seg.text}</span>
+            </div>
+          );
         })}
       </div>
 
       <div className="text-center text-xs text-slate-500">
-          Click on timeline to seek • Drag blocks to adjust (Coming Soon)
+        Click on timeline to seek • Drag blocks to adjust (Coming Soon)
       </div>
     </div>
   );

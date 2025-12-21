@@ -104,8 +104,21 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-### 서비스 실행
+### 로컬 개발 원클릭 실행 (API + Worker + Redis)
+개발 편의를 위해 모든 서비스를 한 번에 실행하는 스크립트를 제공합니다.
+
 ```bash
+cd backend
+./run_dev.sh
+```
+
+### 서비스 개별 실행 (수동)
+```bash
+#로컬 Redis 중지:
+sudo systemctl stop redis-server
+# 불필요한 컨테이너 정리:
+sudo docker-compose down
+
 # 전체 서비스 실행 (API + Redis + Worker)
 docker-compose up --build
 

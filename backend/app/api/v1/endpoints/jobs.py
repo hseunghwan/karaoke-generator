@@ -6,12 +6,12 @@ from app.core.config import settings
 from datetime import datetime
 import uuid
 import json
-import time
 import os
 import shutil
 
 router = APIRouter()
 redis_client = get_redis_client()
+
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
@@ -30,7 +30,8 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
-@router.post("/", response_model=JobStatus)
+
+@router.post("", response_model=JobStatus)
 async def create_job(job: JobCreate):
     job_id = str(uuid.uuid4())
 
@@ -41,8 +42,9 @@ async def create_job(job: JobCreate):
         "artist": job.artist,
         "platform": job.platform,
         "status": "PENDING",
+        "detail": "Waiting for worker to pick up the job...",
         "progress": 0,
-        "createdAt": datetime.now().isoformat()
+        "createdAt": datetime.now().isoformat(),
     }
 
     # Store in Redis
@@ -50,13 +52,36 @@ async def create_job(job: JobCreate):
 
     # Determine file path (mock or url)
     file_path = job.mediaUrl if job.mediaUrl else ""
-    # Force mock data if explicitly requested or if no file provided (for this demo)
-    use_mock = job.useMockData or (not file_path)
+    use_mock = job.useMockData
+
+    # XXX: If no file is uploaded, use the default resource file
+    if not file_path:
+        default_resource = (
+            "/home/cycle1223/workspace/karaoke-generator/backend/resource/odoriko.m4a"
+        )
+        if os.path.exists(default_resource):
+            # Copy to temp dir to simulate upload
+            os.makedirs(settings.TEMP_DIR, exist_ok=True)
+            filename = os.path.basename(default_resource)
+            target_path = os.path.join(settings.TEMP_DIR, filename)
+            shutil.copy(default_resource, target_path)
+            file_path = target_path
+            print(f"Using default resource: {file_path}")
+
+            # XXX: Force real processing since we have a file now
+            use_mock = False
+        else:
+            print("Default resource not found")
+
+    # Force mock data only if we still don't have a file
+    if not file_path:
+        use_mock = True
 
     # Start Worker
     create_karaoke_job(job_id, file_path, use_mock=use_mock)
 
     return job_data
+
 
 @router.get("/{job_id}", response_model=JobStatus)
 async def get_job(job_id: str):
@@ -65,7 +90,8 @@ async def get_job(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
     return json.loads(job_data)
 
-@router.get("/", response_model=list[JobStatus])
+
+@router.get("", response_model=list[JobStatus])
 async def list_jobs():
     keys = redis_client.keys("job:*")
     jobs = []

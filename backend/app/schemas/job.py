@@ -18,7 +18,9 @@ class JobStatus(BaseModel):
     artist: Optional[str] = None
     platform: Optional[str] = None
     status: str
+    detail: Optional[str] = None
     progress: int
     result_url: Optional[str] = None
+    result: Optional[dict] = None
     error: Optional[str] = None
     createdAt: Union[datetime, float, str]

@@ -122,7 +122,7 @@ export const FileUpload = ({
 
       {fileRejections.length > 0 && (
         <p className="text-xs text-red-500 mt-2 font-medium flex items-center gap-1">
-           <X className="w-3 h-3" />
+          <X className="w-3 h-3" />
           File rejected: {fileRejections[0].errors[0].message}
         </p>
       )}

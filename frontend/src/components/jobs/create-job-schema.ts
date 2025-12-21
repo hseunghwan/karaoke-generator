@@ -17,18 +17,19 @@ export const jobFormSchema = z.object({
   targetLanguages: z.array(z.string()).min(1, "Select at least one target language"),
   template: z.enum(["standard", "bilingual", "triple"]),
 }).superRefine((data, ctx) => {
-  if (!data.mediaFile && (!data.mediaUrl || data.mediaUrl.trim() === "")) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Please upload a file or enter a valid URL",
-      path: ["mediaFile"], // Attach error to mediaFile primarily
-    });
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Please upload a file or enter a valid URL",
-      path: ["mediaUrl"],
-    });
-  }
+  // XXX: Temporarily allow empty media to use default backend resource
+  // if (!data.mediaFile && (!data.mediaUrl || data.mediaUrl.trim() === "")) {
+  //   ctx.addIssue({
+  //     code: z.ZodIssueCode.custom,
+  //     message: "Please upload a file or enter a valid URL",
+  //     path: ["mediaFile"], // Attach error to mediaFile primarily
+  //   });
+  //   ctx.addIssue({
+  //     code: z.ZodIssueCode.custom,
+  //     message: "Please upload a file or enter a valid URL",
+  //     path: ["mediaUrl"],
+  //   });
+  // }
 });
 
 export type JobFormValues = z.infer<typeof jobFormSchema>;

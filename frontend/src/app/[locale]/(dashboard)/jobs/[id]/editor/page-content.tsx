@@ -1,33 +1,70 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MOCK_SUBTITLES, SubtitleSegment } from "@/types/subtitle";
+import { SubtitleSegment } from "@/types/subtitle";
 import { TimelineView } from "@/components/editor/timeline-view";
 import { SubtitleList } from "@/components/editor/subtitle-list";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Save, ArrowLeft, Play, Pause, RotateCcw } from "lucide-react";
+import { Save, ArrowLeft, Play, Pause, RotateCcw, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslation } from 'react-i18next';
-import { useJobStore } from "@/store/use-job-store";
+import { api } from "@/lib/api";
 
 export default function EditorPage() {
   const params = useParams();
-  const { jobs } = useJobStore();
-  const [segments, setSegments] = useState<SubtitleSegment[]>(MOCK_SUBTITLES);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [duration, setDuration] = useState(15000); // Mock duration: 15s
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const { t } = useTranslation();
 
-  // Find current job info
-  const currentJob = jobs.find(j => j.id === params.id);
+  const [job, setJob] = useState<any>(null);
+  const [segments, setSegments] = useState<SubtitleSegment[]>([]);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
 
-  // Mock Video Playback Logic (since we don't have a real file)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchJob = async () => {
+      try {
+        const { data } = await api.get(`/jobs/${params.id}`);
+        if (!isMounted) return;
+
+        setJob(data);
+
+        if (data.status === 'COMPLETED' && data.result?.lyrics?.segments) {
+          const mappedSegments = data.result.lyrics.segments.map((s: any, idx: number) => ({
+            id: `seg-${idx}`,
+            startTime: s.start * 1000,
+            endTime: s.end * 1000,
+            text: s.text,
+            translation: s.translated,
+            pronunciation: s.romanized
+          }));
+          setSegments(mappedSegments);
+
+          if (mappedSegments.length > 0) {
+            setDuration(mappedSegments[mappedSegments.length - 1].endTime + 5000);
+          } else {
+            setDuration(30000);
+          }
+        } else if (['PENDING', 'PROCESSING', 'QUEUED', 'UPLOADING'].includes(data.status)) {
+          // Poll every 2 seconds
+          setTimeout(fetchJob, 2000);
+        }
+      } catch (error) {
+        console.error("Failed to fetch job:", error);
+        toast.error("Failed to load job details");
+      }
+    };
+
+    fetchJob();
+    return () => { isMounted = false; };
+  }, [params.id]);
+
+  // Playback Logic
   useEffect(() => {
     if (isPlaying) {
       intervalRef.current = setInterval(() => {
@@ -59,7 +96,7 @@ export default function EditorPage() {
 
   const handleSave = () => {
     toast.success(t('editor.save_changes') + " " + t('common.save'));
-    // In real app: POST /api/jobs/{id}/subtitles
+    // In real app: POST /api/jobs/{id}/subtitles with segments
   };
 
   const togglePlay = () => {
@@ -71,6 +108,75 @@ export default function EditorPage() {
   const activeSegmentId = segments.find(
     seg => currentTime >= seg.startTime && currentTime <= seg.endTime
   )?.id || null;
+
+  if (!job) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (job.status === 'FAILED') {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4">
+        <h2 className="text-xl font-bold text-red-600">Job Processing Failed</h2>
+        <p className="text-muted-foreground">{job.error || "An unknown error occurred."}</p>
+        <Link href="/dashboard">
+          <Button>Back to Dashboard</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // Show progress screen if not completed
+  if (job.status !== 'COMPLETED') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] -m-8 p-8 bg-gray-50/50">
+        <div className="w-full max-w-lg space-y-8 bg-white p-10 rounded-xl shadow-sm border text-center">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight">
+              {job.status === 'PENDING' ? 'Waiting in Queue' : 'Processing Your Job'}
+            </h2>
+            <p className="text-muted-foreground">
+              {job.title} - {job.artist}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="relative pt-2">
+              <div className="flex mb-2 items-center justify-between">
+                <div className="text-right w-full">
+                  <span className="text-xs font-semibold inline-block text-primary">
+                    {job.progress}%
+                  </span>
+                </div>
+              </div>
+              <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-secondary">
+                <div style={{ width: `${job.progress}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary transition-all duration-500 ease-in-out"></div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-sm font-medium animate-pulse">
+              {job.detail || (job.status === 'PENDING' ? "Waiting for worker to pick up the job..." : "Processing...")}
+            </div>
+
+            {job.status === 'PENDING' && (
+              <p className="text-xs text-muted-foreground">
+                Your job is pending because the server is currently handling other requests. It will start automatically.
+              </p>
+            )}
+          </div>
+
+          <div className="pt-4">
+            <Link href="/dashboard">
+              <Button variant="outline">Back to Dashboard</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] -m-8 p-8">
@@ -84,18 +190,16 @@ export default function EditorPage() {
           </Link>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold tracking-tight">{currentJob?.title || t('editor.title')}</h2>
-              {currentJob?.status === 'COMPLETED' && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  {t('dashboard.completed') || 'Completed'}
-                </Badge>
-              )}
+              <h2 className="text-xl font-bold tracking-tight">{job.title || t('editor.title')}</h2>
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                Completed
+              </Badge>
             </div>
-            {currentJob && <span className="text-xs text-muted-foreground">{currentJob.artist}</span>}
+            <span className="text-xs text-muted-foreground">{job.artist}</span>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setSegments(MOCK_SUBTITLES)}>
+          <Button variant="outline" onClick={() => setSegments([])}>
             <RotateCcw className="mr-2 h-4 w-4" />
             {t('editor.reset')}
           </Button>

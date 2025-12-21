@@ -25,25 +25,19 @@ export default function TranslationsProvider({
 
   useEffect(() => {
     const init = async () => {
-        await initTranslations(locale, namespaces, i18n, resources);
-        setInstance(i18n); // Trigger re-render with initialized instance
+      await initTranslations(locale, namespaces, i18n, resources);
+      setInstance(i18n); // Trigger re-render with initialized instance
     };
 
-    if(!i18n.isInitialized) {
-        init();
+    if (!i18n.isInitialized) {
+      init();
     }
   }, [locale, namespaces, resources, i18n]);
 
   // If resources are passed from server component (hydration), we initialize synchronously
   if (resources && !i18n.isInitialized) {
-      initTranslations(locale, namespaces, i18n, resources);
+    initTranslations(locale, namespaces, i18n, resources);
   }
 
   return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
 }
-
-
-
-
-
-

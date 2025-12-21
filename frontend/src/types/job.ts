@@ -11,6 +11,7 @@ export interface Job {
   completedAt?: string;
   thumbnailUrl?: string;
   progress: number; // 0-100
+  detail?: string;
   targetLanguages: string[];
 }
 

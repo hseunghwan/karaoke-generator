@@ -290,7 +290,7 @@ export const JobCreationWizard = () => {
                         <div className="grid grid-cols-[100px_1fr] gap-2 text-sm">
                           <span className="text-muted-foreground">File Name:</span>
                           <span className="font-medium truncate">
-                            {form.getValues("mediaFile")?.name || form.getValues("mediaUrl") || "N/A"}
+                            {form.getValues("mediaFile")?.name || form.getValues("mediaUrl") || "Default File (Odoriko)"}
                           </span>
 
                           <span className="text-muted-foreground">Title:</span>
