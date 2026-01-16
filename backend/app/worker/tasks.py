@@ -2,6 +2,7 @@ import os
 import time
 import json
 import ffmpeg
+from pathlib import Path
 from celery import chain
 from app.worker.celery_app import celery_app
 from app.services import (
@@ -13,6 +14,9 @@ from app.services import (
 )
 from app.core.redis import get_redis_client
 from app.core.config import settings
+
+# 프로젝트 기준 리소스 경로 (backend/resource/)
+RESOURCE_DIR = Path(__file__).parent.parent.parent / "resource"
 
 redis_client = get_redis_client()
 
@@ -86,8 +90,9 @@ def process_audio(self, job_id: str, file_path: str, use_mock: bool = False):
         print(f"Processing audio for job {job_id}")
 
         if use_mock:
-            # Use the mock file
-            file_path = "/home/cycle1223/workspace/karaoke-generator/backend/resource/odoriko.m4a"
+            # Mock 모드: 기본 리소스 파일 사용
+            mock_file = RESOURCE_DIR / "odoriko.m4a"
+            file_path = str(mock_file)
             print(f"Using mock file: {file_path}")
         elif file_path.startswith("http://") or file_path.startswith("https://"):
             print(f"Downloading media from {file_path}")
@@ -135,10 +140,49 @@ def process_lyrics(self, prev_result: dict):
         # Call WhisperX service
         if use_mock:
             time.sleep(2)
-            result = [
-                {"start": 0, "end": 5, "text": "This is a mock lyric line 1"},
-                {"start": 5, "end": 10, "text": "This is a mock lyric line 2"},
-            ]
+            # Mock 데이터: 실제 WhisperX 출력 구조와 동일하게 dict 형태로 반환
+            # odoriko.m4a (Vaundy - 踊り子) 샘플 가사
+            result = {
+                "segments": [
+                    {
+                        "start": 0.0,
+                        "end": 3.5,
+                        "text": "踊り子の夜が始まる",
+                        "words": [
+                            {"word": "踊り子", "start": 0.0, "end": 1.2},
+                            {"word": "の", "start": 1.2, "end": 1.4},
+                            {"word": "夜", "start": 1.4, "end": 2.0},
+                            {"word": "が", "start": 2.0, "end": 2.2},
+                            {"word": "始まる", "start": 2.2, "end": 3.5},
+                        ],
+                    },
+                    {
+                        "start": 4.0,
+                        "end": 7.5,
+                        "text": "君の声が聞こえる",
+                        "words": [
+                            {"word": "君", "start": 4.0, "end": 4.5},
+                            {"word": "の", "start": 4.5, "end": 4.7},
+                            {"word": "声", "start": 4.7, "end": 5.2},
+                            {"word": "が", "start": 5.2, "end": 5.4},
+                            {"word": "聞こえる", "start": 5.4, "end": 7.5},
+                        ],
+                    },
+                    {
+                        "start": 8.0,
+                        "end": 12.0,
+                        "text": "夢の中で踊ろう",
+                        "words": [
+                            {"word": "夢", "start": 8.0, "end": 8.8},
+                            {"word": "の", "start": 8.8, "end": 9.0},
+                            {"word": "中", "start": 9.0, "end": 9.5},
+                            {"word": "で", "start": 9.5, "end": 9.8},
+                            {"word": "踊ろう", "start": 9.8, "end": 12.0},
+                        ],
+                    },
+                ],
+                "language": "ja",
+            }
         else:
             result = transcription.transcribe_and_align(vocals_path)
 
@@ -160,34 +204,38 @@ def process_linguistics(self, prev_result: dict):
     """
     try:
         job_id = prev_result["job_id"]
-        lyrics_segments = prev_result.get("lyrics", {}).get("segments", [])
         use_mock = prev_result.get("use_mock", False)
+
+        # lyrics 데이터 접근 (항상 dict 구조: {"segments": [...], "language": "..."})
+        lyrics_data = prev_result.get("lyrics", {})
+        if isinstance(lyrics_data, dict):
+            lyrics_segments = lyrics_data.get("segments", [])
+        else:
+            # Fallback: 혹시 list로 온 경우 대비
+            lyrics_segments = lyrics_data if isinstance(lyrics_data, list) else []
 
         update_job_progress(
             job_id, "PROCESSING", 60, detail="Translating and romanizing lyrics..."
         )
-        print(f"Processing linguistics for job {job_id}")
+        print(f"Processing linguistics for job {job_id}, segments count: {len(lyrics_segments)}")
 
         if use_mock:
             time.sleep(1)
-            # Add mock translation fields
+            # Mock 모드: 번역/로마자화 필드 추가
             for seg in lyrics_segments:
-                seg["translated"] = f"[Trans] {seg['text']}"
-                seg["romanized"] = f"[Rom] {seg['text']}"
+                seg["translated"] = f"[번역] {seg['text']}"
+                seg["romanized"] = f"[발음] {seg['text']}"
         else:
-            # We assume target language is Korean for now, or fetch from job settings
+            # 실제 Gemini API 호출 (target_lang은 추후 job 메타데이터에서 가져올 수 있음)
             lyrics_segments = linguistics.translate_and_romanize(
                 lyrics_segments, target_lang="ko"
             )
 
-        # Update result structure
-        if "lyrics" in prev_result and "segments" in prev_result["lyrics"]:
+        # 결과 업데이트 (통일된 dict 구조 유지)
+        if isinstance(prev_result.get("lyrics"), dict):
             prev_result["lyrics"]["segments"] = lyrics_segments
-        elif "lyrics" in prev_result and isinstance(prev_result["lyrics"], list):
-            # Handle mock case where lyrics might be a list directly
-            prev_result["lyrics"] = linguistics._add_mock_translation(
-                prev_result["lyrics"]
-            )
+        else:
+            prev_result["lyrics"] = {"segments": lyrics_segments, "language": "unknown"}
 
         update_job_progress(
             job_id, "PROCESSING", 75, detail="Linguistic processing complete."
@@ -196,9 +244,8 @@ def process_linguistics(self, prev_result: dict):
 
     except Exception as e:
         update_job_progress(job_id, "FAILED", 0, error=str(e))
-        # Don't fail the whole job if translation fails, just log it?
-        # For now, let's fail to be safe or maybe just return prev_result
         print(f"Linguistics failed: {e}")
+        # 번역 실패해도 원본 가사로 계속 진행
         return prev_result
 
 

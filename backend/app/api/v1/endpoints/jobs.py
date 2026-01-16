@@ -4,10 +4,14 @@ from app.worker.tasks import create_karaoke_job
 from app.core.redis import get_redis_client
 from app.core.config import settings
 from datetime import datetime
+from pathlib import Path
 import uuid
 import json
 import os
 import shutil
+
+# 프로젝트 기준 리소스 경로 (backend/resource/)
+RESOURCE_DIR = Path(__file__).parent.parent.parent.parent.parent / "resource"
 
 router = APIRouter()
 redis_client = get_redis_client()
@@ -54,24 +58,22 @@ async def create_job(job: JobCreate):
     file_path = job.mediaUrl if job.mediaUrl else ""
     use_mock = job.useMockData
 
-    # XXX: If no file is uploaded, use the default resource file
+    # 파일이 없으면 기본 리소스 파일 사용 (개발/테스트용)
     if not file_path:
-        default_resource = (
-            "/home/cycle1223/workspace/karaoke-generator/backend/resource/odoriko.m4a"
-        )
-        if os.path.exists(default_resource):
-            # Copy to temp dir to simulate upload
+        default_resource = RESOURCE_DIR / "odoriko.m4a"
+        if default_resource.exists():
+            # 임시 디렉토리에 복사하여 업로드 시뮬레이션
             os.makedirs(settings.TEMP_DIR, exist_ok=True)
-            filename = os.path.basename(default_resource)
+            filename = default_resource.name
             target_path = os.path.join(settings.TEMP_DIR, filename)
             shutil.copy(default_resource, target_path)
             file_path = target_path
             print(f"Using default resource: {file_path}")
 
-            # XXX: Force real processing since we have a file now
+            # 실제 파일이 있으므로 실제 처리 모드로 전환
             use_mock = False
         else:
-            print("Default resource not found")
+            print(f"Default resource not found: {default_resource}")
 
     # Force mock data only if we still don't have a file
     if not file_path:
