@@ -4,34 +4,34 @@ overview: 글로벌 다국어 노래방 공유 커뮤니티를 위한 Supabase �
 todos:
   - id: setup-supabase
     content: Supabase 프로젝트 설정 및 환경 변수 구성
-    status: in_progress
+    status: completed
   - id: enable-extensions
     content: PostgreSQL 확장 활성화 (pgvector, pg_trgm)
-    status: pending
+    status: completed
   - id: create-enums
     content: PostgreSQL ENUM 타입 정의 (job_status, platform_type, moderation_status, notification_type 등)
-    status: pending
+    status: completed
   - id: create-core-tables
     content: 핵심 테이블 생성 (profiles, jobs, plans, subscriptions, api_keys)
-    status: pending
+    status: completed
   - id: create-community-tables
     content: 커뮤니티 테이블 생성 (posts, video_variants, comments, likes, notifications)
-    status: pending
+    status: completed
   - id: create-credit-tables
     content: 크레딧 시스템 테이블 및 원자적 차감/환불 함수 생성
-    status: pending
+    status: completed
   - id: setup-rls
     content: Row Level Security 정책 설정 (구독 등급 기반 포함)
-    status: pending
+    status: completed
   - id: create-indexes
     content: 성능 최적화를 위한 인덱스 생성 (HNSW 벡터 인덱스 포함)
-    status: pending
+    status: completed
   - id: setup-realtime
     content: Realtime 구독 설정 (jobs 상태 변경 알림, user_id 필터링)
-    status: pending
+    status: completed
   - id: setup-storage
     content: Supabase Storage 버킷 및 Signed URL 생성 함수 설정
-    status: pending
+    status: completed
 ---
 
 # Supabase 기반 노래방 커뮤니티 DB 설계 (v3 - Final)
@@ -149,7 +149,7 @@ erDiagram
         text artist
         platform_type platform
         text source_language
-        text[] target_languages
+        text_array target_languages
         text template
         boolean is_external_media
         text storage_path
@@ -172,7 +172,7 @@ erDiagram
         text title
         text description
         text thumbnail_path
-        text[] tags
+        text_array tags
         integer view_count
         integer like_count
         integer comment_count
@@ -232,7 +232,7 @@ erDiagram
         integer credits_per_month
         integer price_cents
         jsonb features
-        text[] allowed_templates
+        text_array allowed_templates
         boolean is_active
         timestamptz created_at
     }
@@ -268,7 +268,7 @@ erDiagram
         text name
         text key_hash UK
         text key_prefix
-        text[] scopes
+        text_array scopes
         timestamptz last_used_at
         timestamptz expires_at
         boolean is_active

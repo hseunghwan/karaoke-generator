@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
 
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Karaoke Generator"
     API_V1_STR: str = "/api/v1"
@@ -11,7 +12,12 @@ class Settings(BaseSettings):
     REDIS_DB: int = 0
     REDIS_URL: Optional[str] = None
 
-    # Storage (S3/R2)
+    # Supabase
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_ANON_KEY: Optional[str] = None
+    SUPABASE_SERVICE_KEY: Optional[str] = None  # 서버 전용 (RLS 우회)
+
+    # Storage (S3/R2) - Supabase Storage로 대체 가능
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     AWS_REGION: str = "auto"
@@ -21,14 +27,20 @@ class Settings(BaseSettings):
     # Gemini / LLM
     GEMINI_API_KEY: Optional[str] = None
 
+    # OpenAI (임베딩 생성용)
+    OPENAI_API_KEY: Optional[str] = None
+
     # Paths
     TEMP_DIR: str = "/tmp/karaoke-gen"
 
     def model_post_init(self, __context):
         if not self.REDIS_URL:
-            self.REDIS_URL = f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+            self.REDIS_URL = (
+                f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+            )
 
     class Config:
         env_file = ".env"
+
 
 settings = Settings()
