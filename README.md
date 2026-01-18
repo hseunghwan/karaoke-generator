@@ -71,17 +71,38 @@ Located in `/backend`. Handles heavy computation and AI processing.
 ## 🚀 실행 방법 (Getting Started)
 
 ### 사전 요구사항 (Prerequisites)
-- Docker & Docker Compose
-- Node.js 18+ (pnpm 권장)
-- Python 3.10+
-- Redis Server (로컬 실행 시 필요)
+- Docker & Docker Compose (권장)
+- Node.js 20+ (pnpm 권장) - 수동 실행 시
+- Python 3.10+ - 수동 실행 시
+- Redis Server - 수동 실행 시
 
-### 1. 전체 실행 (Docker Compose)
-가장 간편하게 모든 서비스를 실행하는 방법입니다.
+### 1. 전체 실행 (Docker Compose) - 권장
+가장 간편하게 모든 서비스를 실행하는 방법입니다. 터미널 하나로 충분합니다.
 
 ```bash
+# 1) 환경변수 설정 (최초 1회)
+cp backend/env.sample backend/.env
+cp frontend/env.sample frontend/.env.local
+# .env 파일을 열어 GEMINI_API_KEY 등 필요한 값을 설정하세요
+
+# 2) 모든 서비스 실행 (빌드 포함)
 docker-compose up --build
+
+# 백그라운드 실행
+docker-compose up -d --build
+
+# 로그 확인
+docker-compose logs -f
+
+# 종료
+docker-compose down
 ```
+
+**실행되는 서비스:**
+- **Redis** (6379): 작업 큐 및 캐시
+- **API** (8000): FastAPI 백엔드
+- **Worker**: Celery 백그라운드 워커
+- **Frontend** (3000): Next.js 개발 서버
 
 ### 2. 수동 실행 (Manual Setup)
 개발 및 디버깅을 위해 각 서비스를 개별적으로 실행하는 방법입니다. 총 4개의 터미널이 필요합니다.

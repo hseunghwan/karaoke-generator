@@ -217,7 +217,9 @@ def process_linguistics(self, prev_result: dict):
         update_job_progress(
             job_id, "PROCESSING", 60, detail="Translating and romanizing lyrics..."
         )
-        print(f"Processing linguistics for job {job_id}, segments count: {len(lyrics_segments)}")
+        print(
+            f"Processing linguistics for job {job_id}, segments count: {len(lyrics_segments)}"
+        )
 
         if use_mock:
             time.sleep(1)

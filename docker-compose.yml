@@ -1,0 +1,85 @@
+# 프로젝트 루트 통합 Docker Compose 설정
+# 사용법: docker-compose up --build
+
+services:
+  # ===== 인프라 서비스 =====
+
+  # Redis - 작업 큐 및 캐시용
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redis_data:/data
+
+  # ===== 백엔드 서비스 =====
+
+  # FastAPI 메인 API 서버
+  api:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TEMP_DIR=/tmp/karaoke-gen
+      # 아래 환경변수는 .env 파일 또는 docker-compose override로 설정
+      # - GEMINI_API_KEY=${GEMINI_API_KEY}
+      # - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      # - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      # - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+    env_file:
+      - ./backend/.env  # 민감한 정보는 .env 파일로 관리
+    volumes:
+      - ./backend:/app
+      - temp_data:/tmp/karaoke-gen
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Celery Worker - 백그라운드 작업 처리 (음원 분리, 자막 생성 등)
+  worker:
+    build: ./backend
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TEMP_DIR=/tmp/karaoke-gen
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - temp_data:/tmp/karaoke-gen
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: celery -A app.worker.celery_app worker --loglevel=info
+
+  # ===== 프론트엔드 서비스 =====
+
+  # Next.js 개발 서버
+  frontend:
+    image: node:20-slim
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules  # 로컬 node_modules와 충돌 방지
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+      - NEXT_TELEMETRY_DISABLED=1
+    command: sh -c "corepack enable && pnpm install && pnpm dev"
+    depends_on:
+      - api
+
+# ===== 볼륨 정의 =====
+volumes:
+  redis_data:        # Redis 데이터 영속화
+  temp_data:         # 작업 임시 파일 공유
+  frontend_node_modules:  # 프론트엔드 의존성 캐시
