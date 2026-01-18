@@ -8,6 +8,7 @@ API 키 타입:
 - Publishable Key (sb_publishable_...): 클라이언트용, RLS 정책 적용
 - Secret Key (sb_secret_...): 서버 전용, RLS 우회 (절대 공개 금지)
 """
+
 from typing import Optional
 from functools import lru_cache
 
@@ -23,11 +24,8 @@ def get_supabase_client() -> Optional[Client]:
     """
     if not settings.SUPABASE_URL or not settings.SUPABASE_PUBLISHABLE_KEY:
         return None
-    
-    return create_client(
-        settings.SUPABASE_URL,
-        settings.SUPABASE_PUBLISHABLE_KEY
-    )
+
+    return create_client(settings.SUPABASE_URL, settings.SUPABASE_PUBLISHABLE_KEY)
 
 
 @lru_cache()
@@ -39,11 +37,8 @@ def get_supabase_admin_client() -> Optional[Client]:
     """
     if not settings.SUPABASE_URL or not settings.SUPABASE_SECRET_KEY:
         return None
-    
-    return create_client(
-        settings.SUPABASE_URL,
-        settings.SUPABASE_SECRET_KEY
-    )
+
+    return create_client(settings.SUPABASE_URL, settings.SUPABASE_SECRET_KEY)
 
 
 # 편의를 위한 기본 클라이언트 인스턴스
