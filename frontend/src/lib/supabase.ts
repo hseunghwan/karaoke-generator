@@ -2,21 +2,25 @@
  * Supabase 클라이언트 모듈 (Frontend)
  * 
  * 브라우저에서 Supabase에 접근하기 위한 클라이언트입니다.
- * anon key를 사용하여 RLS 정책이 적용됩니다.
+ * publishable key를 사용하여 RLS 정책이 적용됩니다.
+ * 
+ * API 키 타입:
+ * - Publishable Key (sb_publishable_...): 클라이언트용, 공개 가능
+ * - Secret Key (sb_secret_...): 서버 전용, 절대 프론트엔드에서 사용 금지
  */
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database.types'
 
 // 환경 변수 검증
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl || !supabasePublishableKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
 // Supabase 클라이언트 생성
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabasePublishableKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

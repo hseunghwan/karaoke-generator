@@ -14,8 +14,8 @@ class Settings(BaseSettings):
 
     # Supabase
     SUPABASE_URL: Optional[str] = None
-    SUPABASE_ANON_KEY: Optional[str] = None
-    SUPABASE_SERVICE_KEY: Optional[str] = None  # 서버 전용 (RLS 우회)
+    SUPABASE_PUBLISHABLE_KEY: Optional[str] = None  # 클라이언트용 (RLS 적용)
+    SUPABASE_SECRET_KEY: Optional[str] = None  # 서버 전용 (RLS 우회)
 
     # Storage (S3/R2) - Supabase Storage로 대체 가능
     AWS_ACCESS_KEY_ID: Optional[str] = None
