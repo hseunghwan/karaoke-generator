@@ -28,11 +28,10 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - TEMP_DIR=/tmp/karaoke-gen
-      # 아래 환경변수는 .env 파일 또는 docker-compose override로 설정
-      # - GEMINI_API_KEY=${GEMINI_API_KEY}
-      # - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      # - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      # - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+      # 아래 환경변수는 .env 파일로 관리됨
+      # - SUPABASE_URL, SUPABASE_SERVICE_KEY
+      # - GEMINI_API_KEY, OPENAI_API_KEY
+      # - AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_ENDPOINT_URL
     env_file:
       - ./backend/.env  # 민감한 정보는 .env 파일로 관리
     volumes:
@@ -74,6 +73,9 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
       - NEXT_TELEMETRY_DISABLED=1
+      # Supabase 환경변수는 .env 파일에서 로드
+    env_file:
+      - ./frontend/.env  # Supabase 설정 포함
     command: sh -c "corepack enable && pnpm install && pnpm dev"
     depends_on:
       - api
