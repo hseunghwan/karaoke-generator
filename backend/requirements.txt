@@ -5,12 +5,7 @@ redis==5.0.1
 python-dotenv==1.0.1
 requests==2.31.0
 yt-dlp==2023.11.16
-demucs==4.0.1
-torch>=2.2.0
-torchaudio>=2.2.0
 ffmpeg-python==0.2.0
-# WhisperX needs to be installed specifically, often via git, but for requirements file we can try this or rely on Docker/pip install
-git+https://github.com/m-bain/whisperX.git
 google-generativeai==0.3.2
 pydantic==2.6.1
 boto3==1.34.0
@@ -22,3 +17,16 @@ supabase>=2.3.0
 
 # OpenAI (for embeddings)
 openai>=1.10.0
+
+# ====== ML 패키지 (대용량) ======
+# PyTorch CPU 버전 - whisperX 3.7.4가 torchaudio~=2.8.0 요구
+# GPU가 필요하면 --extra-index-url 줄과 +cpu 접미사 제거
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.8.0+cpu
+torchaudio==2.8.0+cpu
+
+# Demucs (음원 분리) - 최신 버전으로 업데이트
+demucs
+
+# WhisperX (음성 인식 + 정렬)
+git+https://github.com/m-bain/whisperX.git
