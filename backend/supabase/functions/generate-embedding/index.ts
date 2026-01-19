@@ -1,8 +1,12 @@
 /**
  * Edge Function: generate-embedding
  *
- * 텍스트를 받아 OpenAI 임베딩을 생성합니다.
+ * 텍스트를 받아 Cohere 임베딩을 생성합니다. (다국어 지원 우수)
  * 포스트 생성 시 자동으로 호출되거나, 검색 쿼리에 사용됩니다.
+ *
+ * 모델: embed-multilingual-v3.0 (1024 차원)
+ * - 100+ 언어 지원, 한/일/중 성능 우수
+ * - 크로스링구얼 검색 지원 (한국어로 검색 → 일본어 결과)
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -28,26 +32,47 @@ serve(async (req) => {
       )
     }
 
-    // OpenAI API 호출
-    const openaiResponse = await fetch('https://api.openai.com/v1/embeddings', {
+    // Cohere Embed API 호출 (다국어 지원)
+    const cohereResponse = await fetch('https://api.cohere.ai/v1/embed', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${Deno.env.get('COHERE_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'text-embedding-3-small',
-        input: text.slice(0, 8000),  // 최대 8000자
+        texts: [text.slice(0, 8000)],  // 최대 8000자
+        model: 'embed-multilingual-v3.0',
+        input_type: 'search_document',  // 문서 저장 시 'search_document', 검색 쿼리 시 'search_query'
+        truncate: 'END',
       }),
     })
 
-    if (!openaiResponse.ok) {
-      const error = await openaiResponse.text()
-      throw new Error(`OpenAI API error: ${error}`)
+    if (!cohereResponse.ok) {
+      const error = await cohereResponse.text()
+      throw new Error(`Cohere API error: ${error}`)
     }
 
-    const data = await openaiResponse.json()
-    const embedding = data.data[0].embedding
+    const data = await cohereResponse.json()
+    const embedding = data.embeddings[0]
+
+    // [참고] 기존 OpenAI API 호출 코드 (주석 처리)
+    // const openaiResponse = await fetch('https://api.openai.com/v1/embeddings', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     model: 'text-embedding-3-small',
+    //     input: text.slice(0, 8000),
+    //   }),
+    // })
+    // if (!openaiResponse.ok) {
+    //   const error = await openaiResponse.text()
+    //   throw new Error(`OpenAI API error: ${error}`)
+    // }
+    // const data = await openaiResponse.json()
+    // const embedding = data.data[0].embedding
 
     // target_table과 target_id가 제공되면 DB 업데이트
     if (target_table && target_id) {

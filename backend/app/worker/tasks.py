@@ -256,50 +256,48 @@ def upload_to_storage(file_path: str, job_id: str) -> str:
     Uploads the generated video to S3/R2 and returns the public URL.
     """
     try:
-        # Check settings
+        # Check R2 credentials
         if not (
-            settings.AWS_ACCESS_KEY_ID
-            and settings.AWS_SECRET_ACCESS_KEY
-            and settings.AWS_BUCKET_NAME
+            settings.R2_ACCESS_KEY_ID
+            and settings.R2_SECRET_ACCESS_KEY
+            and settings.R2_BUCKET_NAME
         ):
-            print("S3 credentials not found. Skipping upload.")
-            return file_path  # Return local path if S3 not configured
+            print("R2 credentials not found. Skipping upload.")
+            return file_path  # Return local path if R2 not configured
 
         import boto3
-        # from botocore.exceptions import NoCredentialsError
+
+        # Cloudflare R2 endpoint URL
+        r2_endpoint = f"https://{settings.R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 
         s3 = boto3.client(
             "s3",
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            endpoint_url=settings.AWS_ENDPOINT_URL,
-            region_name=settings.AWS_REGION,
+            aws_access_key_id=settings.R2_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.R2_SECRET_ACCESS_KEY,
+            endpoint_url=r2_endpoint,
+            region_name="auto",  # R2는 항상 auto
         )
 
         filename = os.path.basename(file_path)
         s3_key = f"outputs/{job_id}/{filename}"
 
-        print(f"Uploading {file_path} to s3://{settings.AWS_BUCKET_NAME}/{s3_key}")
+        print(f"Uploading {file_path} to r2://{settings.R2_BUCKET_NAME}/{s3_key}")
 
         s3.upload_file(
             file_path,
-            settings.AWS_BUCKET_NAME,
+            settings.R2_BUCKET_NAME,
             s3_key,
             ExtraArgs={
                 "ContentType": "video/mp4",
-                "ACL": "public-read",
-            },  # ACL might fail on some buckets
+            },  # R2는 ACL 미지원
         )
 
-        # Construct public URL
-        # If R2 or generic S3
-        if settings.AWS_ENDPOINT_URL:
-            # This is a bit simplistic, might need adjustment based on provider
-            public_url = (
-                f"{settings.AWS_ENDPOINT_URL}/{settings.AWS_BUCKET_NAME}/{s3_key}"
-            )
+        # Construct public URL using R2 public URL
+        if settings.R2_PUBLIC_URL:
+            public_url = f"{settings.R2_PUBLIC_URL}/{s3_key}"
         else:
-            public_url = f"https://{settings.AWS_BUCKET_NAME}.s3.{settings.AWS_REGION}.amazonaws.com/{s3_key}"
+            # Fallback: S3 compatible URL (접근 불가할 수 있음)
+            public_url = f"{r2_endpoint}/{settings.R2_BUCKET_NAME}/{s3_key}"
 
         return public_url
 

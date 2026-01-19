@@ -17,18 +17,19 @@ class Settings(BaseSettings):
     SUPABASE_PUBLISHABLE_KEY: Optional[str] = None  # 클라이언트용 (RLS 적용)
     SUPABASE_SECRET_KEY: Optional[str] = None  # 서버 전용 (RLS 우회)
 
-    # Storage (S3/R2) - Supabase Storage로 대체 가능
-    AWS_ACCESS_KEY_ID: Optional[str] = None
-    AWS_SECRET_ACCESS_KEY: Optional[str] = None
-    AWS_REGION: str = "auto"
-    AWS_BUCKET_NAME: str = "karaoke-assets"
-    AWS_ENDPOINT_URL: Optional[str] = None  # For Cloudflare R2
+    # Cloudflare R2 Storage
+    R2_ACCOUNT_ID: Optional[str] = None
+    R2_ACCESS_KEY_ID: Optional[str] = None
+    R2_SECRET_ACCESS_KEY: Optional[str] = None
+    R2_BUCKET_NAME: str = "karaoke-assets"
+    R2_PUBLIC_URL: Optional[str] = None  # e.g., https://pub-xxx.r2.dev
 
     # Gemini / LLM
     GEMINI_API_KEY: Optional[str] = None
 
     # OpenAI (임베딩 생성용)
     OPENAI_API_KEY: Optional[str] = None
+    COHERE_API_KEY: Optional[str] = None
 
     # Paths
     TEMP_DIR: str = "/tmp/karaoke-gen"

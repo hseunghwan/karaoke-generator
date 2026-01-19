@@ -30,8 +30,8 @@ services:
       - TEMP_DIR=/tmp/karaoke-gen
       # 아래 환경변수는 .env 파일로 관리됨
       # - SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY
-      # - GEMINI_API_KEY, OPENAI_API_KEY
-      # - AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_ENDPOINT_URL
+      # - GEMINI_API_KEY, COHERE_API_KEY
+      # - R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL
     env_file:
       - ./backend/.env  # 민감한 정보는 .env 파일로 관리
     volumes:
