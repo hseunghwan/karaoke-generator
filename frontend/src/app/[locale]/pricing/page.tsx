@@ -3,6 +3,7 @@
  * 
  * 요금제 비교 및 결제 페이지입니다.
  */
+import { Fragment } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -314,8 +315,8 @@ export default function PricingPage() {
               </thead>
               <tbody>
                 {FEATURE_COMPARISON.map((category, categoryIndex) => (
-                  <>
-                    <tr key={`category-${categoryIndex}`} className="bg-muted/50">
+                  <Fragment key={`category-${categoryIndex}`}>
+                    <tr className="bg-muted/50">
                       <td colSpan={5} className="py-3 px-4 font-semibold text-sm">
                         {category.category}
                       </td>
@@ -346,7 +347,7 @@ export default function PricingPage() {
                         })}
                       </tr>
                     ))}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
