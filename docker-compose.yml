@@ -5,10 +5,12 @@ services:
   # ===== 인프라 서비스 =====
 
   # Redis - 작업 큐 및 캐시용
+  # 포트를 외부에 노출하지 않음 (Docker 내부 네트워크에서만 접근)
+  # 이미 호스트에서 Redis가 실행 중이면 포트 충돌 방지
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    # ports:
+    #   - "6379:6379"  # 외부 접근 불필요 시 주석 처리
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

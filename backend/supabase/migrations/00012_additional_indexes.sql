@@ -11,12 +11,12 @@
 -- =====================================================
 
 -- 사용자별 + 상태별 복합 인덱스 (대시보드용)
-CREATE INDEX IF NOT EXISTS idx_jobs_user_status 
+CREATE INDEX IF NOT EXISTS idx_jobs_user_status
   ON jobs(user_id, status, created_at DESC);
 
 -- 완료된 작업 중 AI 모델 버전별 조회 (재렌더링용)
-CREATE INDEX IF NOT EXISTS idx_jobs_completed_model 
-  ON jobs(ai_model_version, completed_at DESC) 
+CREATE INDEX IF NOT EXISTS idx_jobs_completed_model
+  ON jobs(ai_model_version, completed_at DESC)
   WHERE status = 'completed';
 
 -- =====================================================
@@ -24,12 +24,12 @@ CREATE INDEX IF NOT EXISTS idx_jobs_completed_model
 -- =====================================================
 
 -- 추천 포스트 조회 (featured + approved)
-CREATE INDEX IF NOT EXISTS idx_posts_featured 
-  ON posts(created_at DESC) 
+CREATE INDEX IF NOT EXISTS idx_posts_featured
+  ON posts(created_at DESC)
   WHERE is_featured = true AND moderation_status = 'approved';
 
 -- 사용자별 + 모더레이션 상태별 복합 인덱스
-CREATE INDEX IF NOT EXISTS idx_posts_user_moderation 
+CREATE INDEX IF NOT EXISTS idx_posts_user_moderation
   ON posts(user_id, moderation_status, created_at DESC);
 
 -- =====================================================
@@ -37,26 +37,25 @@ CREATE INDEX IF NOT EXISTS idx_posts_user_moderation
 -- =====================================================
 
 -- 사용자별 안 읽은 알림 개수 조회 최적화
-CREATE INDEX IF NOT EXISTS idx_notifications_user_unread_count 
-  ON notifications(user_id) 
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread_count
+  ON notifications(user_id)
   WHERE read_at IS NULL;
 
 -- 최근 알림 조회 (7일 이내)
-CREATE INDEX IF NOT EXISTS idx_notifications_recent 
-  ON notifications(created_at DESC) 
-  WHERE created_at > NOW() - INTERVAL '7 days';
+CREATE INDEX IF NOT EXISTS idx_notifications_recent
+  ON notifications(created_at DESC);
 
 -- =====================================================
 -- credit_transactions 테이블 추가 인덱스
 -- =====================================================
 
 -- 사용자별 + 유형별 복합 인덱스 (통계용)
-CREATE INDEX IF NOT EXISTS idx_credit_tx_user_type 
+CREATE INDEX IF NOT EXISTS idx_credit_tx_user_type
   ON credit_transactions(user_id, type, created_at DESC);
 
 -- 월별 사용량 집계용 (job_usage만)
-CREATE INDEX IF NOT EXISTS idx_credit_tx_monthly_usage 
-  ON credit_transactions(user_id, created_at) 
+CREATE INDEX IF NOT EXISTS idx_credit_tx_monthly_usage
+  ON credit_transactions(user_id, created_at)
   WHERE type = 'job_usage';
 
 -- =====================================================
@@ -64,13 +63,13 @@ CREATE INDEX IF NOT EXISTS idx_credit_tx_monthly_usage
 -- =====================================================
 
 -- 만료 예정 구독 조회 (갱신 알림용)
-CREATE INDEX IF NOT EXISTS idx_subscriptions_expiring 
-  ON subscriptions(current_period_end) 
+CREATE INDEX IF NOT EXISTS idx_subscriptions_expiring
+  ON subscriptions(current_period_end)
   WHERE status = 'active';
 
 -- Stripe ID로 조회 (Webhook 처리용)
-CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe 
-  ON subscriptions(stripe_subscription_id) 
+CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe
+  ON subscriptions(stripe_subscription_id)
   WHERE stripe_subscription_id IS NOT NULL;
 
 -- =====================================================
@@ -78,16 +77,15 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe
 -- =====================================================
 
 -- 최근 좋아요 조회 (트렌딩 계산용)
-CREATE INDEX IF NOT EXISTS idx_likes_recent 
-  ON likes(created_at DESC) 
-  WHERE created_at > NOW() - INTERVAL '7 days';
+CREATE INDEX IF NOT EXISTS idx_likes_recent
+  ON likes(created_at DESC);
 
 -- =====================================================
 -- comments 테이블 추가 인덱스
 -- =====================================================
 
 -- 최근 댓글 조회
-CREATE INDEX IF NOT EXISTS idx_comments_recent 
+CREATE INDEX IF NOT EXISTS idx_comments_recent
   ON comments(created_at DESC);
 
 -- =====================================================
@@ -112,9 +110,9 @@ BEGIN
     (SELECT COUNT(*) FROM posts WHERE user_id = p_user_id),
     (SELECT COALESCE(SUM(like_count), 0) FROM posts WHERE user_id = p_user_id),
     (SELECT COALESCE(SUM(comment_count), 0) FROM posts WHERE user_id = p_user_id),
-    (SELECT COALESCE(SUM(ABS(amount)), 0) FROM credit_transactions 
-     WHERE user_id = p_user_id 
-       AND type = 'job_usage' 
+    (SELECT COALESCE(SUM(ABS(amount)), 0) FROM credit_transactions
+     WHERE user_id = p_user_id
+       AND type = 'job_usage'
        AND created_at >= date_trunc('month', NOW()));
 END;
 $$ LANGUAGE plpgsql STABLE;

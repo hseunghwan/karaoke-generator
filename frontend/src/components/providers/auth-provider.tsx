@@ -34,6 +34,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .eq("id", userId)
         .single();
 
+      // 프로필이 없으면 (트리거가 아직 실행되지 않았을 수 있음)
+      if (error && (error.code === "PGRST116" || error.message?.includes("No rows"))) {
+        console.log("Profile not found, waiting for trigger...");
+        
+        // 트리거가 실행될 시간을 주기 위해 잠시 대기 후 재시도
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        
+        const { data: retryData, error: retryError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (retryError) {
+          console.warn("Profile still not found after retry. This may be normal if the trigger hasn't run yet.");
+          return null;
+        }
+
+        return retryData as Profile;
+      }
+
       if (error) {
         console.error("Failed to fetch profile:", error);
         return null;
