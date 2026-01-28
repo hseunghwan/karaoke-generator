@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Agentation } from "agentation";
 import "../globals.css";
 import { Providers } from "@/components/providers";
 import { i18nConfig } from "../../../i18nConfig";
@@ -44,13 +45,14 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-            <TranslationsProvider
-                namespaces={i18nNamespaces}
-                locale={locale}
-                resources={resources}
-            >
-                {children}
-            </TranslationsProvider>
+          <TranslationsProvider
+            namespaces={i18nNamespaces}
+            locale={locale}
+            resources={resources}
+          >
+            {children}
+            {process.env.NODE_ENV === "development" && <Agentation />}
+          </TranslationsProvider>
         </Providers>
       </body>
     </html>
