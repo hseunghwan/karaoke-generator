@@ -1,6 +1,6 @@
 /**
  * AuthProvider
- * 
+ *
  * Supabase Auth 상태를 관리하고 앱 전체에 제공하는 컨텍스트 프로바이더입니다.
  * 세션 복원, 자동 토큰 갱신, 프로필 동기화를 처리합니다.
  */
@@ -18,7 +18,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
-  
+
   // 상태
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -37,10 +37,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // 프로필이 없으면 (트리거가 아직 실행되지 않았을 수 있음)
       if (error && (error.code === "PGRST116" || error.message?.includes("No rows"))) {
         console.log("Profile not found, waiting for trigger...");
-        
+
         // 트리거가 실행될 시간을 주기 위해 잠시 대기 후 재시도
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        
+
         const { data: retryData, error: retryError } = await supabase
           .from("profiles")
           .select("*")
@@ -56,7 +56,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       if (error) {
-        console.error("Failed to fetch profile:", error);
+        console.error("Failed to fetch profile:", {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        }, error);
         return null;
       }
 
@@ -109,7 +114,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const initializeAuth = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
-        
+
         if (initialSession) {
           setSession(initialSession);
           setUser(initialSession.user);
@@ -167,6 +172,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           password,
           options: {
             data: metadata,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
 
@@ -246,6 +252,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const { error } = await supabase
           .from("profiles")
+          // @ts-ignore
           .update(updates)
           .eq("id", user.id);
 

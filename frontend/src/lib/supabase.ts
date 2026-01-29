@@ -1,14 +1,14 @@
 /**
  * Supabase 클라이언트 모듈 (Frontend)
- * 
+ *
  * 브라우저에서 Supabase에 접근하기 위한 클라이언트입니다.
  * publishable key를 사용하여 RLS 정책이 적용됩니다.
- * 
+ *
  * API 키 타입:
  * - Publishable Key (sb_publishable_...): 클라이언트용, 공개 가능
  * - Secret Key (sb_secret_...): 서버 전용, 절대 프론트엔드에서 사용 금지
  */
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '@/types/database.types'
 
 // 환경 변수 검증
@@ -20,12 +20,7 @@ if (!supabaseUrl || !supabasePublishableKey) {
 }
 
 // Supabase 클라이언트 생성
-export const supabase = createClient<Database>(supabaseUrl, supabasePublishableKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-})
+export const supabase = createBrowserClient<Database>(supabaseUrl, supabasePublishableKey)
 
 /**
  * Storage Signed URL 생성 (Edge Function 호출)
@@ -163,7 +158,7 @@ export async function getCreditsBalance(): Promise<number> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return 0
 
-  const { data, error } = await supabase.rpc('get_credits_balance', {
+  const { data, error } = await (supabase.rpc as any)('get_credits_balance', {
     p_user_id: user.id,
   })
 

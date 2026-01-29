@@ -1,12 +1,6 @@
-/**
- * OAuth Callback Route Handler
- * 
- * Supabase OAuth 로그인 후 리다이렉트되는 엔드포인트입니다.
- * 인증 코드를 세션으로 교환하고 대시보드로 리다이렉트합니다.
- */
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase-server";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -14,13 +8,9 @@ export async function GET(request: NextRequest) {
   const next = requestUrl.searchParams.get("next") ?? "/dashboard";
 
   if (code) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
+    const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    
+
     if (!error) {
       return NextResponse.redirect(new URL(next, requestUrl.origin));
     }

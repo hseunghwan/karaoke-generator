@@ -1,7 +1,7 @@
 import { i18nRouter } from 'next-i18n-router';
 import { i18nConfig } from '../i18nConfig';
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 
 /**
  * 보호된 경로 목록
@@ -19,7 +19,7 @@ const PROTECTED_PATHS = [
 function isProtectedPath(pathname: string): boolean {
   // locale prefix 제거 (예: /ko/dashboard -> /dashboard)
   const pathWithoutLocale = pathname.replace(/^\/(ko|en|ja)/, '') || '/';
-  
+
   return PROTECTED_PATHS.some(
     (protectedPath) => pathWithoutLocale.startsWith(protectedPath)
   );
@@ -34,47 +34,60 @@ function getLocale(pathname: string): string {
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  // 1. Create a response object first to capture cookie operations
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
-  // 보호된 경로인지 확인
-  if (isProtectedPath(pathname)) {
-    const locale = getLocale(pathname);
-    
-    // Supabase 클라이언트 생성
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-    
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      
-      // 쿠키에서 세션 토큰 확인
-      const accessToken = request.cookies.get('sb-access-token')?.value;
-      const refreshToken = request.cookies.get('sb-refresh-token')?.value;
-      
-      // 세션 확인 시도
-      let isAuthenticated = false;
-      
-      if (accessToken) {
-        try {
-          const { data: { user }, error } = await supabase.auth.getUser(accessToken);
-          isAuthenticated = !!user && !error;
-        } catch {
-          // 토큰 검증 실패
-          isAuthenticated = false;
-        }
-      }
-      
-      // 미인증 시 로그인 페이지로 리다이렉트
-      if (!isAuthenticated) {
-        const loginUrl = new URL(`/${locale}/login`, request.url);
-        loginUrl.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(loginUrl);
-      }
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+
+  // 2. Check auth
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  // 3. Check protected paths
+  if (isProtectedPath(request.nextUrl.pathname)) {
+    if (!user || error) {
+      const locale = getLocale(request.nextUrl.pathname);
+      const loginUrl = new URL(`/${locale}/login`, request.url);
+      loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
-  // i18n 라우팅 처리
-  return i18nRouter(request, i18nConfig);
+  // 4. Run i18n router
+  // i18nRouter might redirect or return a new response.
+  const i18nResponse = i18nRouter(request, i18nConfig);
+
+  // If i18nRouter returns a redirect, we should return it immediately
+  if (i18nResponse.status === 307 || i18nResponse.status === 308) {
+    return i18nResponse;
+  }
+
+  // If i18nRouter returns a regular response (rewrite or next),
+  // we need to merge the cookies set by Supabase (if any, e.g. token refresh)
+  response.cookies.getAll().forEach((cookie) => {
+    i18nResponse.cookies.set(cookie.name, cookie.value, cookie);
+  });
+
+  return i18nResponse;
 }
 
 // applies this middleware only to files in the app directory
